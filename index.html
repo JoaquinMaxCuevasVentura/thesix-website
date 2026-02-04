@@ -3922,9 +3922,17 @@
       const archivePlayIcon = $('#archivePlayIcon');
       const trackLabel = $('#trackLabel');
       const timeLabel = $('#timeLabel');
+      const heroTimeMain = $('#heroTimeMain');
+      const heroTimeDuration = $('#heroTimeDuration');
+      const heroProgressWrap = $('#heroProgressWrap');
+      const heroProgressBar = $('#heroProgressBar');
       const archiveStatus = $('#archiveStatus');
       const archiveTrackName = $('#archiveTrackName');
       const archiveTime = $('#archiveTime');
+      const archiveTimeDuration = $('#archiveTimeDuration');
+      const archiveProgressWrap = $('#archiveProgressWrap');
+      const archiveProgressBar = $('#archiveProgressBar');
+      const heroStatus = $('#heroStatus');
 
       const visHero = $('#visHero');
       const ctxHero = visHero ? visHero.getContext('2d') : null;
@@ -4004,9 +4012,19 @@
         if (!audioEl) return;
         const cur = audioEl.currentTime || 0;
         const dur = Number.isFinite(audioEl.duration) ? audioEl.duration : 0;
-        const t = dur > 0 ? `${fmtTime(cur)} / ${fmtTime(dur)}` : `${fmtTime(cur)} / 00:00`;
-        if (timeLabel) timeLabel.textContent = t;
-        if (archiveTime) archiveTime.textContent = t;
+        const tMain = fmtTime(cur);
+        const tDur = dur > 0 ? fmtTime(dur) : '00:00';
+
+        if (timeLabel) timeLabel.textContent = `${tMain} / ${tDur}`;
+        if (archiveTime) archiveTime.textContent = `${tMain} / ${tDur}`;
+        if (heroTimeMain) heroTimeMain.childNodes[0].nodeValue = tMain;
+        if (heroTimeDuration) heroTimeDuration.textContent = tDur;
+        if (archiveTimeDuration) archiveTimeDuration.textContent = tDur;
+
+        const p = (dur > 0) ? (cur / dur) : 0;
+        const w = `${clamp(p, 0, 1) * 100}%`;
+        if (heroProgressBar) heroProgressBar.style.width = w;
+        if (archiveProgressBar) archiveProgressBar.style.width = w;
       }
 
       function syncPlayUI() {
@@ -4017,6 +4035,7 @@
         if (btnPlayArchive) btnPlayArchive.setAttribute('aria-pressed', paused ? 'false' : 'true');
 
         if (archiveStatus) archiveStatus.textContent = paused ? 'LISTO' : 'REPRODUCIENDO';
+        if (heroStatus) heroStatus.textContent = paused ? 'STANDBY' : 'REPRODUCIENDO';
       }
 
       function setShuffleUI(which, on) {
@@ -4095,12 +4114,13 @@
         updatePlaylistUI();
 
         try {
-          audioEl.src = t.url;
+          const url = encodeURI(t.url);
+          audioEl.src = url;
           audioEl.loop = (mode === 'archive') ? state.loopArchive : false;
           audioEl.load();
 
-          if (wsHero) wsHero.load(t.url);
-          if (wsArchive) wsArchive.load(t.url);
+          if (wsHero) wsHero.load(url);
+          if (wsArchive) wsArchive.load(url);
         } catch (e) {
           console.warn('Track load error:', e);
         }
@@ -4356,7 +4376,7 @@
 
         // Volume popover (Hero)
         btnVolume && btnVolume.addEventListener('click', () => {
-          const open = volPop.classList.toggle('-open');
+          const open = volPop?.classList.toggle('-open') ?? false;
           btnVolume.setAttribute('aria-expanded', open ? 'true' : 'false');
           if (open) volPopArchive?.classList.remove('-open');
           btnVolumeArchive?.setAttribute('aria-expanded', 'false');
@@ -4376,7 +4396,7 @@
 
         // Volume popover (Archive)
         btnVolumeArchive && btnVolumeArchive.addEventListener('click', () => {
-          const open = volPopArchive.classList.toggle('-open');
+          const open = volPopArchive?.classList.toggle('-open') ?? false;
           btnVolumeArchive.setAttribute('aria-expanded', open ? 'true' : 'false');
           if (open) volPop?.classList.remove('-open');
           btnVolume?.setAttribute('aria-expanded', 'false');
@@ -4391,6 +4411,20 @@
         });
         audioEl.addEventListener('timeupdate', updateTimeUI);
         audioEl.addEventListener('loadedmetadata', updateTimeUI);
+        audioEl.addEventListener('error', () => {
+          console.warn('Audio element error:', audioEl.error, 'src:', audioEl.currentSrc || audioEl.src);
+        });
+
+        // Seeking
+        const seek = (e) => {
+          const dur = Number.isFinite(audioEl.duration) ? audioEl.duration : 0;
+          if (dur <= 0) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+          audioEl.currentTime = x * dur;
+        };
+        heroProgressWrap && heroProgressWrap.addEventListener('click', seek);
+        archiveProgressWrap && archiveProgressWrap.addEventListener('click', seek);
 
         // Search
         const search = $('#archiveSearch');

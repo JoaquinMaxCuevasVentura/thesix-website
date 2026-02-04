@@ -1,0 +1,5491 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <title>THE SIX</title>
+
+  <!-- Tailwind (required by project) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <!-- Material Icons (Google Fonts) -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Fonts: Chakra Petch (titles) + Space Mono (data) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet" />
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+  <!-- Lenis smooth scroll -->
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+  <!-- WaveSurfer -->
+  <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+
+  <!-- Swiper (gallery) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <!-- Mouse Follower (Cuberto style) -->
+  <link rel="stylesheet" href="https://unpkg.com/mouse-follower@1/dist/mouse-follower.min.css" />
+  <script src="https://unpkg.com/mouse-follower@1/dist/mouse-follower.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #050505;
+      --bone: #F0F0F0;
+      --red: #FF0000;
+      --dim: rgba(240, 240, 240, .55);
+      --grid: rgba(240, 240, 240, .14);
+      --grid2: rgba(240, 240, 240, .07);
+      --shadow: rgba(0, 0, 0, .8);
+      --ease: cubic-bezier(.16, 1, .3, 1);
+      --title: "Chakra Petch", sans-serif;
+      --data: "Space Mono", monospace;
+      --ring: rgba(255, 0, 0, .85);
+      --ring2: rgba(240, 240, 240, .75);
+      /* ESPACIO SUPERIOR: Altura del menú fijo (~60px) + Gap (~32px) */
+      --section-edge: 92px;
+
+      /* ESPACIO INFERIOR: Altura del menú inferior (~60px) + Gap (~32px) + Safe Area (iPhone) */
+      --section-edge-bottom: max(92px, env(safe-area-inset-bottom) + 92px);
+
+      /* ESPACIO LATERAL: Estandarizado para que no baile el contenido */
+      --section-side: 44px;
+
+      /* Player aesthetic variables (reference design) */
+      --player-bg: #0a0a0a;
+      --player-surface: #111;
+      --player-border: #222;
+      --player-text: #e0e0e0;
+      --player-dim: #666;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--bone);
+      font-family: var(--data);
+      overflow-x: hidden;
+      overscroll-behavior: none;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    /* Mobile Spacing Adjustments */
+    @media (max-width: 1100px) {
+      :root {
+        --section-edge: 80px;
+        --section-side: 20px;
+      }
+    }
+
+    /* Hide scrollbars globally (aesthetic) */
+    html {
+      scrollbar-width: none;
+    }
+
+    html::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    /* a11y: visible focus */
+    :focus {
+      outline: none;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 3px;
+    }
+
+    /* a11y: skip link */
+    .skip-link {
+      position: fixed;
+      left: 12px;
+      top: 12px;
+      z-index: 5000;
+      transform: translateY(-160%);
+      transition: transform .2s var(--ease);
+      background: rgba(5, 5, 5, .85);
+      border: 1px solid rgba(255, 0, 0, .55);
+      color: var(--bone);
+      padding: 10px 12px;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      pointer-events: auto;
+      backdrop-filter: blur(10px);
+    }
+
+    .skip-link:focus-visible {
+      transform: translateY(0);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Desktop: hide native cursor ONLY if JS cursor is active (fallback-safe) */
+    @media (hover:hover) and (pointer:fine) {
+
+      body.cursor-enhanced,
+      body.cursor-enhanced a,
+      body.cursor-enhanced button,
+      body.cursor-enhanced [role="button"] {
+        cursor: none;
+      }
+
+      /* Mostrar cursor nativo cuando hay foto ampliada o modal de foto abierto */
+      body.cursor-show-native .mf-cursor {
+        display: none !important;
+      }
+
+      body.cursor-show-native,
+      body.cursor-show-native a,
+      body.cursor-show-native button,
+      body.cursor-show-native [role="button"] {
+        cursor: default;
+      }
+
+      body.cursor-show-native a[href],
+      body.cursor-show-native .about-photo.-expanded {
+        cursor: pointer;
+      }
+    }
+
+    /* Background grid */
+    .system-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(to right, var(--grid2) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid2) 1px, transparent 1px);
+      background-size: 44px 44px;
+      opacity: .55;
+      mix-blend-mode: screen;
+    }
+
+    .system-bg::before {
+      content: "";
+      position: absolute;
+      inset: -10%;
+      background:
+        radial-gradient(circle at 15% 30%, rgba(255, 0, 0, .12), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(255, 0, 0, .10), transparent 55%),
+        radial-gradient(circle at 50% 50%, rgba(240, 240, 240, .08), transparent 60%);
+      filter: blur(2px);
+      opacity: .95;
+    }
+
+    /* Dynamic grain overlay (Canvas) */
+    #grain {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+      opacity: .55;
+    }
+
+    /* Fixed UI */
+    .fixed-ui {
+      position: fixed;
+      inset: 16px;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .fixed-ui .bar {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      font-size: 12px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      z-index: 100;
+    }
+
+    .fixed-ui .top {
+      top: 10px;
+    }
+
+    .fixed-ui .bottom {
+      bottom: 10px;
+    }
+
+    /* FIX #2: Logo del menú superior sin contenedor (borde/relleno) */
+    .logo {
+      pointer-events: auto;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      backdrop-filter: none;
+      color: var(--bone);
+      letter-spacing: .28em;
+      font-weight: 700;
+      font-family: var(--title);
+    }
+
+    .main-nav {
+      pointer-events: auto;
+      display: flex;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .btn-lang {
+      font-weight: 500;
+    }
+
+    .nav-link {
+      color: var(--dim);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .16em;
+      position: relative;
+      padding: 6px 0;
+      transition: color 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -2px;
+      height: 1px;
+      /* z-index to ensure visibility over anything else in the nav */
+      z-index: 10;
+      background: rgba(255, 0, 0, .75);
+      transform: scaleX(0);
+      transform-origin: right !important;
+      transition: transform .35s var(--ease);
+    }
+
+    .nav-link:hover::after {
+      transform: scaleX(1);
+      transform-origin: left !important;
+    }
+
+    .nav-link:hover {
+      color: var(--bone);
+    }
+
+    /* Mobile Menu fix */
+    @media (max-width: 768px) {
+      .fixed-ui .bar {
+        font-size: 10px;
+        letter-spacing: .1em;
+      }
+
+      .logo {
+        letter-spacing: .15em;
+        font-size: 14px;
+      }
+
+      .main-nav {
+        gap: 12px;
+      }
+
+      .nav-link {
+        font-size: 10px;
+        letter-spacing: .08em;
+      }
+
+      /* Ensure menu fits */
+      .fixed-ui {
+        inset: 10px;
+      }
+    }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      height: 4px;
+      width: 0;
+      background: var(--red);
+      z-index: 60;
+      box-shadow: 0 0 18px rgba(255, 0, 0, .35);
+    }
+
+    /* Typography hierarchy */
+    h1,
+    h2,
+    h3 {
+      font-family: var(--title);
+      text-transform: uppercase;
+      line-height: .86;
+      letter-spacing: .02em;
+      margin: 0;
+    }
+
+    .title-xl {
+      font-size: clamp(54px, 10.8vw, 180px);
+    }
+
+    .title-lg {
+      font-size: clamp(38px, 5.2vw, 94px);
+    }
+
+    .title-md {
+      font-size: clamp(20px, 2.6vw, 42px);
+    }
+
+    .stroke-title {
+      color: transparent;
+      -webkit-text-stroke: 2px rgba(240, 240, 240, .95);
+      opacity: .55;
+      mix-blend-mode: exclusion;
+    }
+
+    .data {
+      font-family: var(--data);
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    /* Horizontal Scroll Wrapper */
+    .scroll-container {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Panels / horizontal track */
+    main.track {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-wrap: nowrap;
+      width: fit-content;
+      will-change: transform;
+    }
+
+    section.panel {
+      width: 100vw;
+      height: 100vh;
+      flex-shrink: 0;
+      padding: 0 !important;
+      border-right: 1px solid var(--grid);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      background: rgba(5, 5, 5, .0);
+    }
+
+    /* ESTANDARIZACION DE CONTENEDORES */
+    .player-section,
+    .about-info-panel,
+    .archive-container,
+    .tv-container,
+    .contact-minimal {
+      width: 100%;
+      height: 100%;
+      padding: var(--section-edge) var(--section-side) var(--section-edge-bottom) var(--section-side);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Reveal base */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    /* Hero */
+    #hero {
+      display: grid;
+      grid-template-columns: 55% 45%;
+      align-items: center;
+      gap: 0;
+      background: #000000;
+      /* Padding quitado, manejado por hijos */
+    }
+
+    .album-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+      padding-top: var(--section-edge) !important;
+      padding-bottom: var(--section-edge-bottom) !important;
+      padding-right: var(--section-side);
+    }
+
+    .player-section {
+      justify-content: space-between;
+      position: relative;
+      z-index: 3;
+      /* Padding resets handled by standardization class above */
+    }
+
+    .zone-indicator {
+      position: absolute;
+      top: var(--section-edge);
+      right: var(--section-side);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0;
+      pointer-events: auto;
+    }
+
+    .zone {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--red);
+      letter-spacing: .26em;
+      text-transform: uppercase;
+      font-size: 11px;
+      padding: 10px 0;
+      user-select: none;
+      transition: all 0.3s var(--ease);
+    }
+
+    .zone-track {
+      font-size: 9px;
+      color: var(--dim);
+      letter-spacing: .12em;
+      text-align: right;
+    }
+
+    .disc-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .disc {
+      width: min(76vmin, 760px);
+      aspect-ratio: 1;
+      /* Remove absolute positioning to let flexbox center it */
+      position: relative;
+      left: auto;
+      bottom: auto;
+      transform: rotate(var(--discRot, 0deg));
+      background: url('img/EP_fondotransparente.png') center/contain no-repeat;
+      will-change: transform;
+      transition: transform 0.05s linear;
+      cursor: grab;
+      touch-action: none;
+      /* Max height to fit within the section respecting margins */
+      max-height: 80vh;
+      max-width: 80vw;
+    }
+
+    .disc:active {
+      cursor: grabbing;
+    }
+
+    .hud {
+      position: relative;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .hud-box {
+      border: 1px solid var(--grid);
+      background: rgba(5, 5, 5, .52);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      position: relative;
+      transition: border-color .25s var(--ease), box-shadow .25s var(--ease);
+    }
+
+    .hud-box:focus-within {
+      border-color: rgba(255, 0, 0, .25);
+      box-shadow: 0 0 0 1px rgba(255, 0, 0, .1);
+    }
+
+    /* Media Controls */
+    .media-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .control-btn {
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(240, 240, 240, .14);
+      background: rgba(240, 240, 240, .04);
+      backdrop-filter: blur(8px);
+      color: var(--bone);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all .2s var(--ease);
+      pointer-events: auto;
+      user-select: none;
+    }
+
+    .control-btn:hover {
+      background: rgba(240, 240, 240, .12);
+      border-color: rgba(240, 240, 240, .5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+    }
+
+    .control-btn:active {
+      transform: translateY(1px);
+    }
+
+    .control-btn.control-play {
+      width: 52px;
+      height: 52px;
+      border: 1px solid var(--red);
+      color: var(--red);
+      background: rgba(255, 0, 0, .08);
+      box-shadow: 0 0 20px rgba(255, 0, 0, .15);
+    }
+
+    .control-btn.control-play:hover {
+      background: var(--red);
+      color: var(--bg);
+      border-color: var(--red);
+      box-shadow: 0 0 30px rgba(255, 0, 0, .3);
+      transform: translateY(-2px);
+    }
+
+    .control-btn[aria-pressed="true"] {
+      border-color: var(--red);
+      background: rgba(255, 0, 0, .15);
+      box-shadow: 0 0 15px rgba(255, 0, 0, .2);
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+      line-height: 1;
+    }
+
+    /* Playlist */
+    .playlist {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 14px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .playlist-item {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 12px;
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(240, 240, 240, .08);
+      align-items: center;
+      transition: background .22s var(--ease), border-color .22s var(--ease), padding-left .22s var(--ease);
+      pointer-events: auto;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .playlist-item:hover {
+      background: rgba(255, 0, 0, .06);
+      border-bottom-color: rgba(255, 0, 0, .18);
+      padding-left: 14px;
+    }
+
+    .playlist-item.-active {
+      background: rgba(255, 0, 0, .1);
+      border-bottom-color: rgba(255, 0, 0, .3);
+    }
+
+    .playlist-item:focus-visible {
+      outline: 2px solid var(--ring2);
+      outline-offset: 2px;
+    }
+
+    .track-thumb {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border: 1px solid rgba(240, 240, 240, .18);
+      transition: border-color .2s var(--ease);
+    }
+
+    .playlist-item:hover .track-thumb,
+    .playlist-item.-active .track-thumb {
+      border-color: rgba(255, 0, 0, .4);
+    }
+
+    .track-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .track-number {
+      font-size: 10px;
+      color: var(--dim);
+      letter-spacing: .1em;
+    }
+
+    .track-title {
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--bone);
+    }
+
+    .playlist-item.-active .track-title {
+      color: var(--red);
+    }
+
+    .track-duration {
+      font-size: 11px;
+      color: var(--dim);
+      font-family: var(--data);
+    }
+
+    /* Buttons — aggressive hover/glitch */
+    .btn {
+      position: relative;
+      border: 1px solid rgba(240, 240, 240, .9);
+      color: var(--bone);
+      background: transparent;
+      padding: 12px 16px;
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+      pointer-events: auto;
+      isolation: isolate;
+      transform: translateZ(0);
+      transition: transform .18s var(--ease), background .18s var(--ease), color .18s var(--ease), border-color .18s var(--ease), filter .18s var(--ease);
+      font-family: var(--data);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn.no-border {
+      border: none;
+    }
+
+    .btn-lang {
+      padding: 4px 8px;
+      font-size: 10px;
+      border-color: rgba(240, 240, 240, 0.3);
+      opacity: 0.6;
+      transition: opacity .2s var(--ease);
+    }
+
+    .btn-lang:hover {
+      opacity: 0.9;
+    }
+
+    .btn-lang.active {
+      opacity: 1;
+      border-color: rgba(240, 240, 240, 0.6);
+    }
+
+    .btn::before,
+    .btn::after {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(90deg, rgba(255, 0, 0, .0), rgba(255, 0, 0, .45), rgba(255, 0, 0, .0));
+      opacity: 0;
+      mix-blend-mode: screen;
+      z-index: -1;
+      transform: translateX(-6px);
+      pointer-events: none;
+    }
+
+    @keyframes hardGlitch {
+      0% {
+        clip-path: inset(0 0 92% 0);
+        transform: translate(-8px, 0);
+        opacity: 0;
+      }
+
+      12% {
+        clip-path: inset(12% 0 58% 0);
+        transform: translate(10px, -1px);
+        opacity: .85;
+      }
+
+      24% {
+        clip-path: inset(48% 0 36% 0);
+        transform: translate(-12px, 1px);
+        opacity: .45;
+      }
+
+      36% {
+        clip-path: inset(72% 0 10% 0);
+        transform: translate(14px, -1px);
+        opacity: .72;
+      }
+
+      48% {
+        clip-path: inset(6% 0 78% 0);
+        transform: translate(-16px, 1px);
+        opacity: .55;
+      }
+
+      60% {
+        clip-path: inset(44% 0 40% 0);
+        transform: translate(12px, 0);
+        opacity: .65;
+      }
+
+      72% {
+        clip-path: inset(82% 0 6% 0);
+        transform: translate(-10px, -1px);
+        opacity: .35;
+      }
+
+      100% {
+        clip-path: inset(0 0 92% 0);
+        transform: translate(0, 0);
+        opacity: 0;
+      }
+    }
+
+    .btn:hover {
+      background: var(--bone);
+      color: var(--bg);
+      border-color: var(--bone);
+      transform: translateY(-2px);
+      filter: contrast(1.2);
+    }
+
+    .btn:hover::before {
+      opacity: .9;
+      animation: hardGlitch .55s steps(2, end) infinite;
+    }
+
+    .btn:hover::after {
+      opacity: .65;
+      animation: hardGlitch .8s steps(2, end) infinite reverse;
+      filter: invert(1);
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(.98);
+    }
+
+    /* EP Button - Red hover variant */
+    .btn-ep {
+      color: var(--bone);
+      border-color: rgba(240, 240, 240, .4);
+    }
+
+    .btn-ep:hover {
+      background: var(--red);
+      color: #050505;
+      border-color: var(--red);
+    }
+
+    .btn-ep:hover::before,
+    .btn-ep:hover::after {
+      background: linear-gradient(90deg, rgba(5, 5, 5, .0), rgba(5, 5, 5, .45), rgba(5, 5, 5, .0));
+    }
+
+    /* WaveSurfer containers */
+    .wave {
+      width: 100%;
+      height: 64px;
+      border: 1px solid var(--player-border);
+      background: var(--player-bg);
+    }
+
+    /* Canvas visualizer (real-time) */
+    canvas.vis {
+      width: 100%;
+      height: 70px;
+      display: block;
+      border: 1px solid var(--player-border);
+      background: var(--player-bg);
+    }
+
+    /* ========================================
+       PLAYER REFERENCE AESTHETIC STYLES
+       ======================================== */
+
+    /* Player Module Container */
+    .player-module {
+      background: var(--player-surface);
+      border: 1px solid var(--player-border);
+    }
+
+    /* Player Time Display (large format) */
+    .player-time-main {
+      font-family: var(--title);
+      font-size: clamp(36px, 6vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--player-text);
+      line-height: 1;
+    }
+
+    .player-time-total {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--player-dim);
+      margin-left: 4px;
+    }
+
+    /* Progress Bar (minimal reference style) */
+    .player-progress-wrap {
+      height: 4px;
+      background: var(--player-border);
+      cursor: pointer;
+      position: relative;
+      width: 100%;
+      margin: 16px 0;
+    }
+
+    .player-progress-bar {
+      height: 100%;
+      background: var(--red);
+      width: 0%;
+      position: relative;
+      transition: width 0.1s linear;
+    }
+
+    .player-progress-bar::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: -3px;
+      width: 2px;
+      height: 10px;
+      background: var(--player-text);
+    }
+
+    /* Player Info Row */
+    .player-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .player-track-name {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      color: var(--player-text);
+    }
+
+    .player-status {
+      font-size: 10px;
+      color: var(--player-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .player-status.-playing {
+      color: var(--red);
+    }
+
+    /* Button Group (reference style) */
+    .btn-group {
+      display: flex;
+      border: 1px solid var(--player-border);
+      background: transparent;
+    }
+
+    .btn-group .control-btn {
+      border: none;
+      border-right: 1px solid var(--player-border);
+      border-radius: 0;
+      background: transparent;
+      width: 44px;
+      height: 44px;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .btn-group .control-btn:last-child {
+      border-right: none;
+    }
+
+    .btn-group .control-btn:hover {
+      background: var(--player-border);
+    }
+
+    .btn-group .control-btn:active {
+      background: var(--red);
+      color: var(--bg);
+    }
+
+    .btn-group .control-btn.-main,
+    .btn-group .control-btn.control-play {
+      width: 64px;
+      background: var(--player-border);
+      box-shadow: none !important;
+      filter: none !important;
+    }
+
+    .btn-group .control-btn.-main:hover,
+    .btn-group .control-btn.control-play:hover {
+      background: var(--player-text);
+      color: var(--bg);
+      box-shadow: none !important;
+      filter: none !important;
+    }
+
+    .btn-group .control-btn.-active,
+    .btn-group .control-btn[aria-pressed="true"] {
+      color: var(--red);
+    }
+
+    /* Player List (track/video list) */
+    .player-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      max-height: 360px;
+    }
+
+    .player-list-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--player-border);
+      display: flex;
+      justify-content: space-between;
+      color: var(--player-dim);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0.02), transparent);
+    }
+
+    .player-list-item {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--player-border);
+      cursor: pointer;
+      transition: background 0.1s, padding-left 0.15s;
+      align-items: center;
+      font-family: var(--data);
+      font-size: 11px;
+    }
+
+    .player-list-item:hover {
+      background: var(--player-bg);
+      padding-left: 20px;
+    }
+
+    .player-list-item.-active {
+      background: var(--player-bg);
+      border-left: 2px solid var(--red);
+    }
+
+    .player-list-item.-active .item-idx {
+      color: var(--red);
+    }
+
+    .item-idx {
+      color: var(--player-dim);
+      font-size: 10px;
+    }
+
+    .item-title {
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--player-text);
+    }
+
+    .item-dur {
+      color: var(--player-dim);
+      font-size: 11px;
+    }
+
+    /* Video REC Badge */
+    .rec-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 4px 8px;
+      font-size: 10px;
+      z-index: 10;
+      font-family: var(--data);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--player-text);
+    }
+
+    .rec-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--red);
+      animation: recBlink 1s infinite;
+    }
+
+    @keyframes recBlink {
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    /* Video Bar (bottom info) */
+    .video-bar {
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-top: 1px solid var(--player-border);
+      background: var(--player-surface);
+    }
+
+    .video-title {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+    }
+
+    .video-sub {
+      color: var(--player-dim);
+      font-size: 10px;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    /* Link Button (video actions) */
+    .link-btn {
+      background: transparent;
+      border: 1px solid var(--player-border);
+      color: var(--player-text);
+      padding: 8px 12px;
+      font-family: var(--data);
+      font-size: 10px;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.1s;
+      letter-spacing: 0.08em;
+    }
+
+    .link-btn:hover {
+      background: var(--player-text);
+      color: var(--bg);
+      border-color: var(--player-text);
+    }
+
+    /* Section Headers (reference style) */
+    .section-header-ref {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--player-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--player-border);
+    }
+
+    /* Visualizer Canvas (reference style bars) */
+    .visualizer-ref {
+      height: 60px;
+      background: var(--player-bg);
+      border: 1px solid var(--player-border);
+      border-top: none;
+    }
+
+    .visualizer-ref canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Volume Slider (reference style) */
+    .volume-wrap-ref {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 120px;
+    }
+
+    .volume-wrap-ref .material-symbols-outlined {
+      font-size: 18px;
+      color: var(--player-dim);
+      cursor: pointer;
+    }
+
+    .volume-wrap-ref .material-symbols-outlined:hover {
+      color: var(--player-text);
+    }
+
+    .volume-slider-ref {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 2px;
+      background: var(--player-border);
+      cursor: pointer;
+    }
+
+    .volume-slider-ref::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px;
+      height: 10px;
+      background: var(--player-text);
+    }
+
+    /* Meta Info */
+    .player-meta {
+      color: var(--player-dim);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .player-meta span {
+      color: var(--red);
+    }
+
+    /* Volume popover - Minimalist & Side-positioned */
+    .vol-pop {
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-left: 14px;
+      display: none;
+      padding: 0;
+      border: none;
+      background: transparent;
+      z-index: 30;
+      width: 80px;
+      height: 30px;
+      display: none;
+      /* controlled by JS */
+      align-items: center;
+    }
+
+    .vol-pop.-open {
+      display: flex;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .vol-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      padding: 0 8px;
+    }
+
+    /* Remove default icons via CSS if they exist in HTML, or we remove in HTML */
+    .vol-row span.material-symbols-outlined {
+      display: none;
+    }
+
+    .vol-row input[type="range"] {
+      width: 100%;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .vol-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 4px;
+      height: 12px;
+      background: var(--bone);
+      border-radius: 0;
+      box-shadow: none;
+      transition: background .2s;
+    }
+
+    .vol-row input[type="range"]::-webkit-slider-thumb:hover {
+      background: var(--red);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50%) translateX(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+      }
+    }
+
+    /* Fixed Cursor Z-Index & Dark State */
+    .mf-cursor {
+      z-index: 9999 !important;
+    }
+
+    .mf-cursor.-dark {
+      mix-blend-mode: normal !important;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)) !important;
+    }
+
+    .mf-cursor.-dark::before,
+    .mf-cursor.-dark::after {
+      background: #050505 !important;
+    }
+
+    .mf-cursor.-dark .mf-cursor-text {
+      color: var(--bone);
+    }
+
+    /* When body has contact-active class (set by JS when contact section is in view) */
+    body.contact-active .mf-cursor {
+      mix-blend-mode: normal !important;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)) !important;
+    }
+
+    body.contact-active .mf-cursor::before,
+    body.contact-active .mf-cursor::after {
+      background: #050505 !important;
+    }
+
+    body.contact-active .nav-link::after {
+      background: #050505 !important;
+    }
+
+    body.contact-active .nav-link:hover {
+      color: #050505;
+    }
+
+    /* Force dark cursor when hovering inside contact section */
+    #contact .mf-cursor {
+      mix-blend-mode: normal !important;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)) !important;
+    }
+
+    #contact .mf-cursor::before,
+    #contact .mf-cursor::after {
+      background: #050505 !important;
+    }
+
+    /* Force custom cursor on Canvas & Photo Modal */
+    #aboutCanvas,
+    .photo-modal-stage,
+    .photo-modal-stage img {
+      cursor: none !important;
+    }
+
+
+
+    .photo-modal-footer {
+      background: rgba(0, 0, 0, 0.9);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .ep-acquire-wrap {
+      position: relative;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      pointer-events: auto;
+      z-index: 50;
+    }
+
+    @media (max-width: 1100px) {
+      .ep-acquire-wrap {
+        left: auto;
+        top: auto;
+      }
+    }
+
+    .vol-pop.-open {
+      display: block;
+    }
+
+    .vol-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .vol-row input[type="range"] {
+      width: 100%;
+      accent-color: var(--red);
+    }
+
+    /* Custom scrollbars (adhoc) for internal scroll areas */
+    .scroll-adhoc {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 0, 0, .85) transparent;
+    }
+
+    .scroll-adhoc::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .scroll-adhoc::-webkit-scrollbar-track {
+      background: rgba(240, 240, 240, .05);
+    }
+
+    .scroll-adhoc::-webkit-scrollbar-thumb {
+      background: rgba(255, 0, 0, .85);
+      border-radius: 0;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, .35) inset;
+    }
+
+    /* About / NOSOTROS */
+    #about {
+      background: #000000;
+      padding: 0 !important;
+      display: grid;
+      grid-template-columns: 38% 62%;
+      gap: 0;
+    }
+
+    /* FIX #3: reducir padding y evitar scrollbar visible; si hace falta, scrollbar ad-hoc */
+    /* FIX #3: reducir padding y evitar scrollbar visible; si hace falta, scrollbar ad-hoc */
+    .about-info-panel {
+      /* Padding handled by standardization class */
+      justify-content: flex-start;
+      border-right: 1px solid var(--grid);
+      background: rgba(5, 5, 5, .60);
+      backdrop-filter: blur(8px);
+      overflow-y: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .about-info-panel.scroll-adhoc {
+      scrollbar-width: thin;
+    }
+
+    .about-tagline {
+      font-family: var(--title);
+      font-size: clamp(14px, 1.6vw, 20px);
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 6px;
+    }
+
+    .about-location {
+      font-family: var(--data);
+      font-size: 11px;
+      letter-spacing: .18em;
+      color: var(--dim);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .about-story {
+      font-family: var(--data);
+      font-size: 11.5px;
+      line-height: 1.75;
+      color: rgba(240, 240, 240, .82);
+      margin-bottom: 18px;
+    }
+
+    .about-story p {
+      margin: 0 0 12px 0;
+    }
+
+    .about-divider {
+      width: 60px;
+      height: 2px;
+      background: var(--red);
+      margin: 18px 0;
+    }
+
+    .about-members-title {
+      font-family: var(--data);
+      font-size: 10px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 10px;
+    }
+
+    .about-member {
+      font-family: var(--data);
+      font-size: 11px;
+      letter-spacing: .08em;
+      color: var(--bone);
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(240, 240, 240, .08);
+      transition: all 0.2s var(--ease);
+    }
+
+    .about-member:hover {
+      color: var(--red);
+      padding-left: 8px;
+      border-bottom-color: rgba(255, 0, 0, .25);
+    }
+
+    .about-member-name {
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .about-member-role {
+      color: var(--dim);
+      font-size: 10px;
+    }
+
+    .about-canvas-wrapper {
+      width: 100%;
+      height: 100% !important;
+      padding: 0 !important;
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255, 0, 0, .04), transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255, 0, 0, .03), transparent 50%);
+      touch-action: none;
+    }
+
+    .about-canvas-wrapper:active {
+      cursor: grabbing;
+    }
+
+    .about-canvas {
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      will-change: transform;
+      transform: translate(0px, 0px);
+    }
+
+    .about-photo {
+      position: absolute;
+      background: transparent;
+      border: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+      overflow: hidden;
+      transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), z-index 0s;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .about-photo::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, .08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .about-photo::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0, 0, 0, .03) 2px, rgba(0, 0, 0, .03) 4px);
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.5;
+    }
+
+    .about-photo:hover {
+      transform: scale(1.08) rotate(0deg) !important;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, .75);
+      z-index: 100 !important;
+    }
+
+    .about-photo:focus-visible {
+      outline: 2px solid var(--ring2);
+      outline-offset: 2px;
+      z-index: 120 !important;
+    }
+
+    .about-photo img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      filter: grayscale(0.3) contrast(1.1);
+      transition: filter 0.3s var(--ease);
+      transform: translateZ(0);
+    }
+
+    .about-photo:hover img {
+      filter: grayscale(0) contrast(1.15);
+    }
+
+    .about-photo.size-lg {
+      width: 380px;
+      height: auto;
+      max-height: 400px;
+    }
+
+    .about-photo.size-md {
+      width: 280px;
+      height: auto;
+      max-height: 320px;
+    }
+
+    .about-photo.size-sm {
+      width: 200px;
+      height: auto;
+      max-height: 260px;
+    }
+
+    .about-photo.size-xs {
+      width: 150px;
+      height: auto;
+      max-height: 200px;
+    }
+
+    /* Foto siendo arrastrada - expandida */
+    .about-photo.-dragging {
+      z-index: 200 !important;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, .8);
+      cursor: grabbing !important;
+    }
+
+    .about-photo.-expanded {
+      position: fixed !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) rotate(0deg) !important;
+      width: 85vw !important;
+      height: auto !important;
+      max-height: 85vh !important;
+      z-index: 300 !important;
+      box-shadow: 0 50px 150px rgba(0, 0, 0, .9);
+      border: none;
+      transition: all 0.4s var(--ease);
+      cursor: pointer;
+    }
+
+    .about-photo.-expanded img {
+      filter: grayscale(0) contrast(1.1);
+      object-fit: contain;
+    }
+
+    .canvas-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--data);
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--dim);
+      opacity: 0.6;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 20;
+    }
+
+    .canvas-hint .material-symbols-outlined {
+      font-size: 16px;
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes hintPulse {
+
+      0%,
+      100% {
+        opacity: 0.4;
+        transform: translateX(0);
+      }
+
+      50% {
+        opacity: 1;
+        transform: translateX(5px);
+      }
+    }
+
+    /* Photo modal (About) - Professional immersive design */
+    #photoModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2600;
+      display: none;
+      background: rgba(0, 0, 0, .97);
+      backdrop-filter: blur(20px);
+    }
+
+    #photoModal.-open {
+      display: block;
+    }
+
+    @media (min-width: 901px) {
+      #photoModal {
+        left: 38vw;
+        width: 62vw;
+      }
+    }
+
+    .photo-modal-shell {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+      padding: 80px 24px 24px;
+    }
+
+    .photo-modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .photo-modal-title {
+      font-family: var(--title);
+      font-size: 14px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--bone);
+      font-weight: 700;
+    }
+
+    .photo-modal-stage {
+      display: grid;
+      place-items: center;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      overflow: hidden;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, .6);
+    }
+
+    .photo-modal-stage img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0;
+    }
+
+    .photo-modal-footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      padding-top: 12px;
+    }
+
+    .photo-modal-footer .data {
+      display: none;
+    }
+
+    .photo-modal-footer .control-btn {
+      width: 50px;
+      height: 50px;
+    }
+
+    /* Archive */
+    #archive {
+      background: #050505;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* FIX #4: padding superior e inferior igual (distancia al menú) */
+    .archive-container {
+      /* Handled by standard class */
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .archive-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 1px solid var(--grid);
+      padding-bottom: 14px;
+      margin-top: 0;
+      gap: 18px;
+    }
+
+    .archive-header .archive-tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .archive-search {
+      width: min(320px, 42vw);
+      border: 1px solid rgba(240, 240, 240, .16);
+      background: rgba(0, 0, 0, .25);
+      color: var(--bone);
+      padding: 10px 12px;
+      font-family: var(--data);
+      font-size: 12px;
+      letter-spacing: .08em;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+    }
+
+    .archive-search:focus {
+      outline: none;
+      border-color: rgba(255, 0, 0, .4);
+      box-shadow: 0 0 0 1px rgba(255, 0, 0, .15);
+    }
+
+    .archive-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 30px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .archive-player {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      padding: 40px;
+      border: 1px solid var(--grid);
+      background: rgba(10, 10, 10, 0.4);
+      backdrop-filter: blur(10px);
+      position: relative;
+      min-height: 0;
+      transition: border-color .25s var(--ease);
+    }
+
+    .archive-player:focus-within {
+      border-color: rgba(255, 0, 0, .2);
+    }
+
+    .archive-time-display {
+      font-family: var(--title);
+      font-size: clamp(56px, 8vw, 140px);
+      color: var(--bone);
+      line-height: 0.9;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 0;
+    }
+
+    .archive-visualizer-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+      border: 1px solid rgba(240, 240, 240, .1);
+    }
+
+    .archive-controls {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .archive-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0;
+      gap: 12px;
+    }
+
+    .archive-track-info {
+      font-family: var(--data);
+      font-size: 12px;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: right;
+    }
+
+    .archive-meta {
+      border-top: 1px solid rgba(240, 240, 240, .08);
+      padding-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .archive-meta .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      font-size: 11px;
+      color: rgba(240, 240, 240, .78);
+      letter-spacing: .06em;
+    }
+
+    .archive-meta .meta-row .k {
+      color: var(--dim);
+      text-transform: uppercase;
+    }
+
+    .archive-playlist-section {
+      border: 1px solid var(--grid);
+      background: rgba(5, 5, 5, 0.5);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      min-height: 0;
+    }
+
+    .archive-playlist-header {
+      padding: 16px 20px;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0.03), transparent);
+      border-bottom: 1px solid var(--grid);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .archive-tracklist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .track-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      font-family: var(--data);
+      font-size: 12px;
+      color: var(--dim);
+      transition: all 0.2s var(--ease);
+      align-items: center;
+    }
+
+    .track-item:hover {
+      background: rgba(255, 0, 0, 0.08);
+      color: var(--bone);
+      padding-left: 26px;
+    }
+
+    .track-item.-active {
+      background: rgba(255, 0, 0, 0.15);
+      color: var(--red);
+      border-left: 3px solid var(--red);
+      padding-left: 26px;
+    }
+
+    .track-item:focus-visible {
+      outline: 2px solid var(--ring2);
+      outline-offset: -2px;
+    }
+
+    .track-item span:last-child {
+      opacity: 0.6;
+      font-size: 11px;
+    }
+
+    /* TV - FIX #5 (rectangular + full width like archive) */
+    #tv {
+      background: #050505;
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .tv-container {
+      /* Handled by standard class */
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tv-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 1px solid var(--grid);
+      padding-bottom: 20px;
+      min-height: 48px;
+      margin-top: 0;
+      gap: 18px;
+    }
+
+    .tv-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 30px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .tv-player {
+      border: 1px solid rgba(240, 240, 240, .16);
+      background: rgba(0, 0, 0, .25);
+      overflow: hidden;
+      box-shadow: 0 40px 140px rgba(0, 0, 0, .7);
+      position: relative;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      transition: border-color .25s var(--ease);
+    }
+
+    .tv-player:focus-within {
+      border-color: rgba(255, 0, 0, .2);
+    }
+
+    .tv-player::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 0px, transparent 2px);
+      pointer-events: none;
+      opacity: .85;
+      mix-blend-mode: overlay;
+    }
+
+    .tv-iframe-wrap {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tv-iframe-wrap iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      opacity: .92;
+      filter: contrast(1.1);
+    }
+
+    .tv-info {
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      border-top: 1px solid rgba(240, 240, 240, .10);
+      background: rgba(0, 0, 0, .12);
+    }
+
+    .tv-title {
+      font-family: var(--title);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-size: 16px;
+      line-height: 1.1;
+    }
+
+    .tv-sub {
+      font-family: var(--data);
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-top: 4px;
+    }
+
+    .tv-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .tv-list {
+      border: 1px solid rgba(240, 240, 240, .12);
+      background: rgba(0, 0, 0, .22);
+      border-radius: 0;
+      overflow: hidden;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tv-list header {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(240, 240, 240, .1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0.02), transparent);
+    }
+
+    .tv-items {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      overflow: auto;
+      flex: 1;
+    }
+
+    .tv-item {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background .2s var(--ease), color .2s var(--ease), padding .2s var(--ease);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      color: var(--dim);
+      font-family: var(--data);
+      font-size: 12px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      pointer-events: auto;
+    }
+
+    .tv-item:hover {
+      background: rgba(255, 0, 0, .08);
+      color: var(--bone);
+      padding-left: 20px;
+    }
+
+    .tv-item.-active {
+      background: rgba(255, 0, 0, .14);
+      color: var(--red);
+      border-left: 3px solid var(--red);
+      padding-left: 20px;
+    }
+
+    .tv-item:focus-visible {
+      outline: 2px solid var(--ring2);
+      outline-offset: -2px;
+    }
+
+    /* Contact */
+    #contact {
+      background: var(--red);
+      color: #050505;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 !important;
+    }
+
+    .contact-minimal {
+      /* Handled by standard class */
+      justify-content: space-between;
+    }
+
+    .contact-top-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 30px;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    /* FIX #6: texto en dos líneas y alineado al ancho de botones */
+    .contact-intro {
+      width: 260px;
+      max-width: 100%;
+      padding-top: 0;
+    }
+
+    .contact-intro p {
+      font-family: var(--title);
+      font-size: clamp(16px, 1.5vw, 22px);
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .resource-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+      width: auto;
+    }
+
+    .resource-btn {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      font-family: var(--data);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .15em;
+      color: var(--bone) !important;
+      background: #050505;
+      border: 1px solid #050505;
+      padding: 16px 24px;
+      margin-bottom: 0;
+      transition: all 0.3s var(--ease);
+      font-weight: 700;
+      text-decoration: none;
+      text-align: left;
+      width: 280px;
+      min-width: 280px;
+      max-width: 280px;
+      box-sizing: border-box;
+    }
+
+    .resource-btn-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    .resource-btn:hover {
+      background: var(--bone);
+      color: #050505 !important;
+      border-color: var(--bone);
+      transform: translateY(-3px);
+    }
+
+    .contact-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .big-link {
+      font-family: var(--title);
+      font-size: clamp(40px, 9vw, 160px);
+      font-weight: 700;
+      color: #050505;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      text-decoration: none;
+      transition: all 0.4s var(--ease);
+      display: block;
+      width: fit-content;
+    }
+
+    .big-link:hover {
+      color: white;
+      transform: skewX(-10deg) translateX(20px);
+    }
+
+    .big-link.phone {
+      font-size: clamp(32px, 7vw, 120px);
+      opacity: 0.8;
+    }
+
+    /* Gallery modal (Swiper) */
+    #galleryModal {
+      position: fixed;
+      inset: 0;
+      z-index: 2500;
+      background: rgba(5, 5, 5, .94);
+      backdrop-filter: blur(14px);
+      display: none;
+    }
+
+    #galleryModal.-open {
+      display: block;
+    }
+
+    .gallery-shell {
+      height: 100%;
+      padding: var(--section-edge) 22px;
+    }
+
+    .swiper {
+      height: 100%;
+    }
+
+    .swiper-slide {
+      display: grid;
+      place-items: center;
+    }
+
+    .slide-card {
+      width: min(920px, 94vw);
+      aspect-ratio: 16/10;
+      border: 1px solid rgba(240, 240, 240, .22);
+      background: #0b0b0b;
+      box-shadow: 0 40px 140px rgba(0, 0, 0, .7);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(1) contrast(1.2);
+      opacity: .92;
+    }
+
+    .slide-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(to bottom, rgba(240, 240, 240, .05) 0px, rgba(240, 240, 240, .05) 1px, transparent 1px, transparent 4px);
+      mix-blend-mode: overlay;
+      pointer-events: none;
+      opacity: .8;
+    }
+
+    /* ======================================== PRELOADER - minimal ======================================== */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      background: #050505;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #loader .loader-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      gap: 14px;
+    }
+
+    #loaderLogo {
+      width: min(150px, 35vw);
+      height: auto;
+      display: block;
+      transform-origin: 50% 50%;
+      opacity: 0;
+    }
+
+    @keyframes breathe {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0.9;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 1;
+      }
+    }
+
+    #loaderLogo.pulsing {
+      animation: breathe 2.4s ease-in-out infinite;
+    }
+
+    /* Custom mouse-follower cursor */
+    .mf-cursor {
+      mix-blend-mode: screen;
+      filter: drop-shadow(0 0 18px rgba(255, 0, 0, .22));
+    }
+
+    .mf-cursor::before,
+    .mf-cursor::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 34px;
+      height: 2px;
+      background: rgba(255, 0, 0, .92);
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .mf-cursor::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    .mf-cursor.-link::before,
+    .mf-cursor.-link::after {
+      background: rgba(240, 240, 240, .92);
+      width: 44px;
+    }
+
+    .mf-cursor.-glitch {
+      filter: drop-shadow(0 0 22px rgba(255, 0, 0, .35)) contrast(1.2);
+    }
+
+    .mf-cursor.-glitch::before {
+      animation: hardGlitch .55s steps(2, end) infinite;
+    }
+
+    .mf-cursor.-glitch::after {
+      animation: hardGlitch .75s steps(2, end) infinite reverse;
+    }
+
+    .mf-cursor.-invert {
+      mix-blend-mode: difference;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      :root {
+        --section-edge: 80px;
+        --section-edge-bottom: max(80px, env(safe-area-inset-bottom) + 80px);
+        --section-side: 20px;
+      }
+
+      #about {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 60vh;
+      }
+
+      .about-info-panel {
+        /* Padding handled by standardization, but we need border fix */
+        border-right: none;
+        border-bottom: 1px solid var(--grid);
+        height: auto !important;
+      }
+
+      .about-canvas-wrapper {
+        height: 60vh !important;
+      }
+
+      /* Photo modal full screen on small */
+      #photoModal {
+        left: 0;
+        width: 100%;
+      }
+
+      .archive-container {
+        padding: var(--section-edge) 20px;
+        padding-bottom: var(--section-edge-bottom);
+      }
+
+      .archive-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 20px;
+      }
+
+      .archive-player {
+        padding: 24px;
+        gap: 18px;
+      }
+
+      .archive-time-display {
+        font-size: 64px;
+      }
+
+      .archive-playlist-section {
+        max-height: 320px;
+      }
+
+      .archive-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .archive-search {
+        width: 100%;
+      }
+
+
+      /* Removed duplicate definitions handled by standard vars */
+
+      .tv-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 20px;
+      }
+
+      .tv-list {
+        max-height: 280px;
+      }
+
+      .tv-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .contact-top-row {
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .resource-list {
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .big-link {
+        font-size: 12vw;
+      }
+
+      .big-link.phone {
+        font-size: 10vw;
+      }
+    }
+
+    /* Mobile layout switch (horizontal -> vertical) */
+    @media (max-width: 1100px) {
+      :root {
+        --section-edge: 80px;
+        --section-edge-bottom: max(80px, env(safe-area-inset-bottom) + 80px);
+        --section-side: 20px;
+      }
+
+      body {
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .fixed-ui {
+        inset: 10px;
+      }
+
+      .scroll-container {
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: 100vh;
+        scroll-snap-type: y mandatory;
+      }
+
+      main.track {
+        width: 100%;
+        display: block;
+      }
+
+      section.panel {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        border-right: none;
+        border-bottom: 1px solid var(--grid);
+        /* Padding handled by standardization class */
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+      }
+
+      #hero {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+      }
+
+      .album-section {
+        height: 50vh;
+        margin-bottom: 20px;
+        padding-top: 0 !important;
+        padding-bottom: 20px !important;
+      }
+
+      /* player-section padding handled by standard class + var updates */
+      .player-section {
+        height: auto;
+        margin-top: 18px;
+      }
+
+      .media-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .zone-indicator {
+        position: relative;
+        top: auto;
+        right: auto;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .hud {
+        position: relative;
+        width: 100%;
+        margin-top: 14px;
+      }
+
+      .main-nav {
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .main-nav .nav-link {
+        font-size: 8px;
+        letter-spacing: 0.04em;
+        padding: 4px 0;
+      }
+
+      #grain {
+        opacity: .4;
+      }
+
+      .disc {
+        width: 62vmin;
+        /* Reset transform for mobile since we are not using translate(-50%) anymore in desktop but we might need to check previous mobile overrides */
+        transform: rotate(var(--discRot, 0deg));
+      }
+
+      .contact-minimal {
+        padding: var(--section-edge) 18px;
+        padding-bottom: var(--section-edge-bottom);
+      }
+
+      .resource-btn {
+        width: 100%;
+        min-width: 100%;
+        max-width: none;
+      }
+
+      .contact-intro {
+        width: 100%;
+      }
+    }
+
+    /* Extra-small phones */
+    @media (max-width: 380px) {
+      .fixed-ui {
+        inset: 6px;
+      }
+
+      .fixed-ui .bar {
+        left: 6px;
+        right: 6px;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+      }
+
+      .logo {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+      }
+
+      .main-nav {
+        gap: 4px;
+      }
+
+      .main-nav .nav-link {
+        font-size: 7px;
+        letter-spacing: 0.02em;
+        padding: 3px 0;
+      }
+
+      /* Bottom menu compact */
+      .fixed-ui .bottom {
+        font-size: 8px;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .bottom .social-links {
+        gap: 6px;
+      }
+
+      .bottom .social-links a {
+        padding: 4px 6px;
+      }
+
+      .title-xl {
+        font-size: clamp(42px, 14vw, 120px);
+      }
+
+      .title-lg {
+        font-size: clamp(30px, 10vw, 72px);
+      }
+
+      .title-md {
+        font-size: clamp(18px, 6vw, 32px);
+      }
+
+      .player-section {
+        padding: 16px;
+      }
+
+      .archive-player {
+        padding: 18px;
+      }
+
+      .archive-time-display {
+        font-size: 54px;
+      }
+
+      .player-time-main {
+        font-size: clamp(28px, 8vw, 36px);
+      }
+
+      .btn-group .control-btn {
+        width: 36px;
+        height: 36px;
+      }
+
+      .btn-group .control-btn.control-play {
+        width: 48px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #grain {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#hero">Saltar al contenido</a>
+
+  <!-- Preloader (GSAP only). FIX #1: sin texto visible -->
+  <div id="loader" role="status" aria-live="polite" aria-label="Cargando">
+    <div class="loader-inner">
+      <img id="loaderLogo" src="img/Logotipo_thesix.svg" alt="THE SIX" decoding="async" />
+      <span class="sr-only">Cargando…</span>
+    </div>
+  </div>
+
+  <!-- Background layers -->
+  <div class="system-bg" aria-hidden="true"></div>
+  <canvas id="grain" aria-hidden="true"></canvas>
+
+  <!-- Fixed UI -->
+  <div class="fixed-ui">
+    <div class="bar top">
+      <a class="logo" href="#hero" data-nav="0" data-cursor-state="link" aria-label="Inicio">
+        <img src="img/Logotipo_thesix_blanco.svg" alt="The Six" style="height: 32px; width: auto;" decoding="async" />
+      </a>
+
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a class="nav-link" href="#about" data-nav="1" data-cursor-state="link"><span
+            data-i18n="nav_about">NOSOTROS</span></a>
+        <a class="nav-link" href="#archive" data-nav="2" data-cursor-state="link"><span data-i18n="nav_music">NUESTRA
+            MÚSICA</span></a>
+        <a class="nav-link" href="#tv" data-nav="3" data-cursor-state="link"><span data-i18n="nav_tv">TV</span></a>
+        <a class="nav-link" href="#contact" data-nav="4" data-cursor-state="link"><span
+            data-i18n="nav_contact">CONTACTO</span></a>
+      </nav>
+    </div>
+
+    <div class="bar bottom">
+      <div style="color:var(--dim);">©2026</div>
+
+      <div style="display:flex; gap:24px; align-items:center; pointer-events:auto;">
+        <div style="display:flex; gap:12px; font-weight:700;">
+          <a href="#" class="nav-link" data-cursor-state="link" aria-label="Instagram">IG</a>
+          <a href="#" class="nav-link" data-cursor-state="link" aria-label="YouTube">YT</a>
+        </div>
+        <div class="lang-switcher" style="display:flex; gap:8px;" role="group" aria-label="Idioma del sitio">
+          <button type="button" class="btn btn-lang active" data-lang="es" aria-pressed="true"
+            title="Español">ESP</button>
+          <button type="button" class="btn btn-lang" data-lang="ay" aria-pressed="false"
+            title="Aymar aru (Aymara Bolivia)">AYM</button>
+          <button type="button" class="btn btn-lang" data-lang="qu" aria-pressed="false"
+            title="Qhichwa simi (Quechua Bolivia)">QUE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <!-- Audio element (shared) -->
+  <audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
+
+  <!-- Scroll Container for Horizontal Scrolling -->
+  <div class="scroll-container" id="scrollContainer">
+    <main class="track" id="track">
+      <!-- 01 HERO -->
+      <section class="panel" id="hero" aria-label="Reproductor EP">
+        <!-- Button moved to top-level absolute position within Hero -->
+        <!-- Left Column: Audio Player -->
+        <div class="player-section">
+          <!-- Button moved to flow layout to be close to player -->
+          <div class="ep-acquire-wrap">
+            <a href="https://wa.me/59100000000" target="_blank" rel="noreferrer" class="btn btn-ep no-border"
+              data-cursor-state="link" data-i18n="btn_acquire" style="margin:0;">ADQUIRIR EL EP</a>
+          </div>
+
+          <div class="hud">
+            <div class="hud-box player-module">
+
+              <!-- Time Display -->
+              <div class="player-time-main" id="heroTimeMain">00:00<span class="player-time-total">/ <span
+                    id="heroTimeDuration">00:00</span></span></div>
+
+              <!-- Track Info -->
+              <div class="player-info-row">
+                <span class="player-track-name" id="trackLabel">CALLARÉ SIMPLEMENTE</span>
+                <span class="player-status" id="heroStatus">STANDBY</span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="player-progress-wrap" id="heroProgressWrap">
+                <div class="player-progress-bar" id="heroProgressBar"></div>
+              </div>
+
+              <!-- Visualizer -->
+              <div id="waveHero" class="wave" aria-label="Waveform" style="display:none;"></div>
+              <canvas class="vis" id="visHero" width="600" height="80" aria-label="Visualizador del EP"></canvas>
+
+              <!-- Controls in Button Group -->
+              <div class="btn-group" style="margin-top: 16px;" aria-label="Controles del EP">
+                <button class="control-btn" id="btnShuffle" data-cursor-state="link" data-i18n-title="title_aleatorio"
+                  title="Aleatorio" type="button" aria-pressed="false">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">shuffle</span>
+                </button>
+                <button class="control-btn" id="btnPrev" data-cursor-state="link" data-i18n-title="title_anterior"
+                  title="Anterior" type="button">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">skip_previous</span>
+                </button>
+                <button class="control-btn control-play" id="btnPlay" data-cursor-state="glitch"
+                  data-i18n-title="title_reproducir" title="Reproducir" type="button" aria-pressed="false">
+                  <span class="material-symbols-outlined" id="btnPlayIcon" style="font-size: 20px;">play_arrow</span>
+                </button>
+                <button class="control-btn" id="btnNext" data-cursor-state="link" data-i18n-title="title_siguiente"
+                  title="Siguiente" type="button">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">skip_next</span>
+                </button>
+                <button class="control-btn" id="btnLoop" data-cursor-state="link" data-i18n-title="title_loop"
+                  title="Loop" type="button" aria-pressed="false">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">repeat</span>
+                </button>
+              </div>
+
+              <!-- Volume Row -->
+              <div style="display:flex; align-items:center; gap:16px; margin-top: 16px;">
+                <div class="volume-wrap-ref">
+                  <span class="material-symbols-outlined" id="btnVolume" data-cursor-state="link"
+                    title="Volumen">volume_up</span>
+                  <input id="volumeSlider" type="range" class="volume-slider-ref" min="0" max="1" step="0.01"
+                    value="0.95" aria-label="Volumen" />
+                </div>
+                <div class="player-meta" style="margin-left: auto;">IDX: <span id="heroTrackIdx">01/03</span></div>
+              </div>
+
+              <div class="playlist scroll-adhoc" aria-label="Lista de canciones del EP">
+                <div class="playlist-item -active" data-track="0" role="button" tabindex="0" aria-current="true"
+                  aria-label="Reproducir: Callaré Simplemente">
+                  <img src="img/ep_cover.png" alt="Portada EP" class="track-thumb" decoding="async" />
+                  <div class="track-info">
+                    <div class="track-number">01</div>
+                    <div class="track-title">CALLARÉ SIMPLEMENTE</div>
+                  </div>
+                  <div class="track-duration">3:12</div>
+                </div>
+                <div class="playlist-item" data-track="1" role="button" tabindex="0" aria-label="Reproducir: Soledad">
+                  <img src="img/ep_cover.png" alt="Portada EP" class="track-thumb" decoding="async" />
+                  <div class="track-info">
+                    <div class="track-number">02</div>
+                    <div class="track-title">SOLEDAD</div>
+                  </div>
+                  <div class="track-duration">4:08</div>
+                </div>
+                <div class="playlist-item" data-track="2" role="button" tabindex="0" aria-label="Reproducir: Illimani">
+                  <img src="img/ep_cover.png" alt="Portada EP" class="track-thumb" decoding="async" />
+                  <div class="track-info">
+                    <div class="track-number">03</div>
+                    <div class="track-title">ILLIMANI</div>
+                  </div>
+                  <div class="track-duration">3:36</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Album Artwork -->
+        <div class="album-section">
+          <div class="zone-indicator">
+            <div class="zone" id="zoneLabel">
+              <span class="material-symbols-outlined" style="font-size: 16px;">radio_button_checked</span>
+              <span id="zoneName">ZONA 1</span>
+            </div>
+            <div class="zone-track" id="zoneTrack">CALLARÉ SIMPLEMENTE</div>
+          </div>
+
+          <div class="disc-stage">
+            <div class="disc" id="disc" data-cursor-state="glitch" role="button" tabindex="0"
+              aria-label="Disco: arrastra para cambiar de zona"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 ABOUT -->
+      <section class="panel" id="about" aria-label="Nosotros" data-i18n-aria="section_about">
+        <div class="about-info-panel scroll-adhoc">
+          <div class="about-tagline reveal" data-reveal data-i18n="about_tagline">Punk Rock de altura</div>
+          <div class="about-location reveal" data-reveal data-i18n="about_location">El Alto, Bolivia</div>
+
+          <div class="about-story reveal" data-reveal>
+            <p data-i18n="about_story_p1">Nacimos como Six Six Sex, pero el mundo nos masticó, nos escupió y solo quedó:
+              <strong style="color: var(--red);">The SIX</strong>.
+            </p>
+            <p data-i18n="about_story_p2">Más de seis años resistiendo. Sobreviviendo pandemias, silencios y escenarios
+              prestados. Tocando donde se
+              pueda, con equipos ajenos y cables heridos. Nuestro sonido a veces sucio, a veces limpio, pero siempre
+              honesto.</p>
+            <p data-i18n="about_story_p3">Cada nota se funde en el alma; cada verso fluye entre ritmos que embriagan.
+              Letras que retratan vidas,
+              sueños y amores. Letras que enfrentan la soledad, la miseria y la realidad de cada día.</p>
+            <p data-i18n="about_story_p4">Años de sinceridad. Escenarios sudados. Noches que terminan convertidas en
+              himnos, años de verdad sin
+              filtro, sin pedir permiso y sin bajar la cabeza.</p>
+          </div>
+
+          <div class="about-divider"></div>
+
+          <div class="about-members-title reveal" data-reveal data-i18n="about_members_title">Miembros</div>
+          <div class="about-member reveal" data-reveal>
+            <span class="about-member-name">Carlos Quisbert Mariscal</span>
+            <span class="about-member-role" data-i18n="about_role_voz_guitarra"> – Voz y guitarra</span>
+          </div>
+          <div class="about-member reveal" data-reveal>
+            <span class="about-member-name">Christian Gutiérrez</span>
+            <span class="about-member-role" data-i18n="about_role_voz_guitarra"> – Voz y guitarra</span>
+          </div>
+          <div class="about-member reveal" data-reveal>
+            <span class="about-member-name">Eduardo Gutiérrez</span>
+            <span class="about-member-role" data-i18n="about_role_bateria"> – Batería</span>
+          </div>
+          <div class="about-member reveal" data-reveal>
+            <span class="about-member-name">Joaquín Cuevas Ventura</span>
+            <span class="about-member-role" data-i18n="about_role_bajo"> – Bajo</span>
+          </div>
+        </div>
+
+        <div class="about-canvas-wrapper" id="aboutCanvasWrapper" data-cursor-state="drag"
+          aria-label="Mosaico de fotos. Arrastra para explorar.">
+          <div class="about-canvas" id="aboutCanvas">
+            <!-- Contenido generado dinámicamente por GalleryLoader -->
+          </div>
+
+          <div class="canvas-hint" aria-hidden="true">
+            <span class="material-symbols-outlined">swipe</span>
+            <span data-i18n="canvas_hint">Arrastra para explorar / Click para abrir</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 ARCHIVE -->
+      <section class="panel" id="archive" aria-label="Nuestra Música" data-i18n-aria="section_music">
+        <div class="archive-container">
+          <div class="archive-header">
+
+            <div class="archive-tools reveal" data-reveal>
+              <input id="archiveSearch" class="archive-search" type="search" placeholder="Buscar pista…"
+                aria-label="Buscar en el archivo" data-i18n-placeholder="search_placeholder" />
+              <button id="btnArchiveShuffle" class="control-btn" type="button" data-i18n-title="title_aleatorio"
+                title="Aleatorio" data-cursor-state="link" aria-pressed="false">
+                <span class="material-symbols-outlined">shuffle</span>
+              </button>
+              <button id="btnArchiveLoop" class="control-btn" type="button" data-i18n-title="title_loop" title="Loop"
+                data-cursor-state="link" aria-pressed="false">
+                <span class="material-symbols-outlined">repeat</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="archive-grid">
+            <div class="archive-player player-module reveal" data-reveal>
+              <!-- Large Time Display -->
+              <div class="player-time-main" id="archiveTime">00:00<span class="player-time-total">/ <span
+                    id="archiveTimeDuration">00:00</span></span></div>
+
+              <!-- Track Info Row -->
+              <div class="player-info-row">
+                <span class="player-track-name" id="archiveTrackName" data-i18n="ui_selecciona_pista">SELECCIONA UNA
+                  PISTA</span>
+                <span class="player-status" id="archiveStatus">STANDBY</span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="player-progress-wrap" id="archiveProgressWrap">
+                <div class="player-progress-bar" id="archiveProgressBar"></div>
+              </div>
+
+              <!-- Visualizer -->
+              <div class="archive-visualizer-container" aria-label="Waveform y visualizador del archivo">
+                <div id="waveArchive" class="wave"></div>
+                <canvas id="visArchive" class="vis" style="height: 60px; border-top:none;"
+                  aria-label="Visualizador del archivo"></canvas>
+              </div>
+
+              <!-- Controls in Button Group -->
+              <div class="btn-group" style="margin-top: 16px;" aria-label="Controles del archivo">
+                <button class="control-btn" id="btnPrevArchive" data-cursor-state="link"
+                  data-i18n-title="title_anterior" title="Anterior" type="button">
+                  <span class="material-symbols-outlined">skip_previous</span>
+                </button>
+                <button class="control-btn" id="btnStopArchive" data-cursor-state="link" data-i18n-title="title_detener"
+                  title="Detener" type="button">
+                  <span class="material-symbols-outlined">stop</span>
+                </button>
+                <button class="control-btn control-play" id="btnPlayArchive" data-cursor-state="glitch"
+                  data-i18n-title="title_reproducir" title="Reproducir" type="button" aria-pressed="false">
+                  <span class="material-symbols-outlined" id="archivePlayIcon">play_arrow</span>
+                </button>
+                <button class="control-btn" id="btnNextArchive" data-cursor-state="link"
+                  data-i18n-title="title_siguiente" title="Siguiente" type="button">
+                  <span class="material-symbols-outlined">skip_next</span>
+                </button>
+                <button class="control-btn" id="btnArchiveLoop" data-cursor-state="link" data-i18n-title="title_loop"
+                  title="Loop" type="button" aria-pressed="false">
+                  <span class="material-symbols-outlined">repeat</span>
+                </button>
+              </div>
+
+              <!-- Volume Row -->
+              <div style="display:flex; align-items:center; gap:16px; margin-top: 16px;">
+                <div class="volume-wrap-ref">
+                  <span class="material-symbols-outlined" id="btnVolumeArchive" data-cursor-state="link"
+                    title="Volumen">volume_up</span>
+                  <input id="volumeSliderArchive" type="range" class="volume-slider-ref" min="0" max="1" step="0.01"
+                    value="0.95" aria-label="Volumen" />
+                </div>
+                <div class="player-meta" style="margin-left: auto;">IDX: <span id="archiveTrackIdx">00/06</span></div>
+              </div>
+
+            </div>
+
+            <div class="archive-playlist-section reveal" data-reveal>
+              <div class="archive-playlist-header">
+                <span class="data" style="font-weight:700;">TRACKLIST</span>
+                <span class="material-symbols-outlined" style="font-size:16px; opacity:0.6;">queue_music</span>
+              </div>
+              <ul id="trackList" class="archive-tracklist scroll-adhoc" aria-label="Lista de pistas"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 TV -->
+      <section class="panel" id="tv" aria-label="Videos" data-i18n-aria="section_tv">
+        <div class="tv-container">
+          <div class="tv-header">
+            <div class="data reveal" data-reveal data-i18n="tv_header">TV // STREAM</div>
+            <div class="data reveal" data-reveal style="opacity:.8;" data-i18n="tv_select_video">SELECCIONA UN VIDEO
+            </div>
+          </div>
+
+          <div class="tv-grid">
+            <div class="tv-player player-module reveal" data-reveal>
+              <div class="tv-iframe-wrap">
+                <!-- Badge removed -->
+                <iframe id="tvIframe" loading="lazy" title="Video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen></iframe>
+              </div>
+              <div class="video-bar">
+                <div>
+                  <div class="video-title" id="tvTitle">Último lanzamiento</div>
+                  <div class="video-sub" id="tvSub">THE SIX // OFFICIAL</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <a id="tvOpenYouTube" class="link-btn" data-cursor-state="link" target="_blank" rel="noreferrer"
+                    data-i18n="btn_open">
+                    <span class="material-symbols-outlined">open_in_new</span>
+                    ABRIR
+                  </a>
+                  <button id="tvCopyLink" class="link-btn" data-cursor-state="glitch" type="button"
+                    data-i18n="btn_copy">
+                    <span class="material-symbols-outlined">content_copy</span>
+                    COPIAR
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <aside class="tv-list reveal" data-reveal aria-label="Lista de videos">
+              <header>
+                <span class="data" style="font-weight:700;" data-i18n="tv_playlist">PLAYLIST</span>
+                <span class="material-symbols-outlined" style="font-size:16px; opacity:0.6;">subscriptions</span>
+              </header>
+              <ul id="tvList" class="tv-items scroll-adhoc"></ul>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 CONTACT -->
+      <section class="panel" id="contact" aria-label="Contacto" data-i18n-aria="section_contact"
+        data-cursor-state="dark">
+        <div class="contact-minimal">
+          <div class="contact-top-row">
+            <div class="contact-intro reveal" data-reveal>
+              <p data-i18n="contact_intro">Contrataciones, prensa<br>y colaboraciones</p>
+            </div>
+
+            <div class="contact-resources reveal" data-reveal>
+              <div class="resource-list">
+                <a href="#" class="resource-btn" data-cursor-state="glitch"><svg class="resource-btn-icon"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" fill="none" aria-hidden="true">
+                    <path d="M4 15v4h16v-4" />
+                    <path d="M12 4v12m0 0l-4-4m4 4l4-4" />
+                  </svg><span data-i18n="presskit" data-scramble-hover>PRESSKIT (PDF)</span></a>
+                <a href="#" class="resource-btn" data-cursor-state="glitch"><svg class="resource-btn-icon"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" fill="none" aria-hidden="true">
+                    <path d="M4 15v4h16v-4" />
+                    <path d="M12 4v12m0 0l-4-4m4 4l4-4" />
+                  </svg><span data-i18n="rider" data-scramble-hover>RIDER TÉCNICO (PDF)</span></a>
+                <a href="#" class="resource-btn" data-cursor-state="glitch"><svg class="resource-btn-icon"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" fill="none" aria-hidden="true">
+                    <path d="M4 15v4h16v-4" />
+                    <path d="M12 4v12m0 0l-4-4m4 4l4-4" />
+                  </svg><span data-i18n="marca" data-scramble-hover>MARCA GRÁFICA (RAR)</span></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="contact-main reveal" data-reveal>
+            <a href="mailto:thesix@gmail.com" class="big-link" data-cursor-state="link">thesix@gmail.com</a>
+            <a href="https://wa.me/59160000000" class="big-link phone" data-cursor-state="link">+591 600 00 000</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- About Photo Modal -->
+  <div id="photoModal" aria-label="Foto" role="dialog" aria-modal="true">
+    <div class="photo-modal-shell">
+      <div class="photo-modal-top">
+        <div class="photo-modal-title" id="photoModalTitle" data-i18n="photo_default">FOTO</div>
+        <button id="photoModalClose" class="link-btn" type="button" data-cursor-state="glitch"
+          data-i18n="btn_close_esc">
+          <span class="material-symbols-outlined">close</span>
+          CERRAR [ESC]
+        </button>
+      </div>
+      <div class="photo-modal-stage">
+        <img id="photoModalImg" alt="" />
+      </div>
+      <div class="photo-modal-footer">
+        <div class="player-meta" id="photoModalHint" data-i18n="photo_hint">Enter/Espacio: cerrar</div>
+        <div class="btn-group">
+          <button id="photoDownload" class="control-btn" type="button" data-i18n-title="title_download"
+            title="Descargar" data-cursor-state="link"><span class="material-symbols-outlined">download</span></button>
+          <button id="photoPrev" class="control-btn" type="button" data-i18n-title="title_anterior" title="Anterior"
+            data-cursor-state="link"><span class="material-symbols-outlined">chevron_left</span></button>
+          <button id="photoNext" class="control-btn" type="button" data-i18n-title="title_siguiente" title="Siguiente"
+            data-cursor-state="link"><span class="material-symbols-outlined">chevron_right</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gallery Modal (Swiper) -->
+  <div id="galleryModal" aria-label="Galería">
+    <button id="galleryClose" class="btn" data-cursor-state="glitch" data-scramble-hover type="button"
+      style="position:absolute; top:20px; right:20px; z-index:2600;" data-i18n="btn_close">CERRAR [X]</button>
+    <div class="gallery-shell">
+      <div class="swiper" id="gallerySwiper">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide">
+            <div class="slide-card"><img loading="lazy" decoding="async" alt="EP Photo 01"
+                src="https://images.unsplash.com/photo-1521337706264-a414f153a5fc?auto=format&fit=crop&w=1600&q=70" />
+            </div>
+          </div>
+          <div class="swiper-slide">
+            <div class="slide-card"><img loading="lazy" decoding="async" alt="EP Photo 02"
+                src="https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&w=1600&q=70" />
+            </div>
+          </div>
+          <div class="swiper-slide">
+            <div class="slide-card"><img loading="lazy" decoding="async" alt="EP Photo 03"
+                src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=70" />
+            </div>
+          </div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==============================
+    // CONFIG
+    // ==============================
+    const CONFIG = {
+      tracks: [
+        { id: 'callare', name: 'CALLARÉ SIMPLEMENTE', url: 'MP3/the SIX - Callare Simplemente.mp3', dur: '3:12', zone: 1 },
+        { id: 'soledad', name: 'SOLEDAD', url: 'MP3/the SIX - Soledad.mp3', dur: '4:08', zone: 2 },
+        { id: 'illimani', name: 'ILLIMANI', url: 'MP3/the SIX - Illimani.mp3', dur: '3:36', zone: 3 },
+      ],
+      archive: [
+        {
+          id: 'lost',
+          name: 'I LOST MY CHANCE (1RA VERSIÓN)',
+          url: 'MP3/the Six - I Lost My Chance.mp3',
+          dur: '00:00'
+        },
+        {
+          id: 'kung',
+          name: 'KUNG FURY (DEMO)',
+          url: 'MP3/the SIX - Kung fury.mp3',
+          dur: '00:00'
+        },
+        {
+          id: 'palomita',
+          name: 'PALOMITA (DEMO)',
+          url: 'MP3/the SIX - Palomita.mp3',
+          dur: '00:00'
+        },
+        {
+          id: 'power',
+          name: 'POWER RAT (DEMO)',
+          url: 'MP3/the SIX - Power rat.mp3',
+          dur: '00:00'
+        },
+        {
+          id: 'raining',
+          name: 'RAINING TOWN (DEMO)',
+          url: 'MP3/the SIX - Raining town.mp3',
+          dur: '00:00'
+        },
+        {
+          id: 'until',
+          name: 'UNTIL I DIE (DEMO)',
+          url: 'MP3/the SIX - Until I die.mp3',
+          dur: '00:00'
+        },
+      ],
+      videos: [
+        { id: 'rSMcy3JiGgw', title: 'YOU DON\'T KNOW MY NAME', sub: 'Official', dur: '04:12' },
+        { id: 'WwOv5yQ9CpI', title: 'KUNG FURY', sub: 'Official', dur: '03:45' },
+        { id: 'V1J8NVcJRlg', title: 'PRAYER', sub: 'Official', dur: '04:20' },
+        { id: '1x-loN3_JQc', title: 'PALOMITA', sub: 'Official', dur: '03:30' },
+        { id: 'p4WNK3A_3DM', title: 'BAÑO PÚBLICO', sub: 'Official', dur: '03:55' },
+      ]
+    };
+
+    // ==============================
+    // Utils
+    // ==============================
+    const $ = (s, el = document) => el.querySelector(s);
+    const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const isMobile = () => window.matchMedia('(max-width: 1100px)').matches;
+
+    function onPressLikeButton(el, handler) {
+      if (!el) return;
+      el.addEventListener('click', (e) => handler(e));
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handler(e);
+        }
+      });
+    }
+
+    // ==============================
+    // Loader (GSAP)
+    // FIX #1: solo logo animado
+    // ==============================
+    const Loader = (() => {
+      const loader = $('#loader');
+      const logo = $('#loaderLogo');
+      let isComplete = false;
+
+      function startAnimation() {
+        if (!loader || !logo) return;
+        gsap.to(logo, {
+          opacity: 1,
+          scale: 1,
+          duration: 1.1,
+          ease: 'expo.out',
+          onComplete: () => {
+            if (!isComplete) logo.classList.add('pulsing');
+          }
+        });
+      }
+
+      function complete() {
+        return new Promise((resolve) => {
+          isComplete = true;
+          logo?.classList.remove('pulsing');
+          const tl = gsap.timeline({
+            onComplete: () => {
+              if (loader) loader.style.display = 'none';
+              resolve();
+            }
+          });
+          tl.to(logo, { opacity: 0, scale: 0.9, duration: 0.55, ease: 'power2.in' })
+            .to(loader, { opacity: 0, duration: 0.45 }, '-=0.35');
+        });
+      }
+
+      function hideFast() {
+        if (!loader) return;
+        loader.style.opacity = '0';
+        loader.style.pointerEvents = 'none';
+        setTimeout(() => { loader.style.display = 'none'; }, 100);
+      }
+
+      return { startAnimation, complete, hideFast };
+    })();
+
+    // ==============================
+    // RenderLoopController
+    // ==============================
+    function createRAFController(loopFn) {
+      let rafId = 0;
+      let running = false;
+
+      const tick = () => {
+        if (!running) return;
+        loopFn();
+        rafId = requestAnimationFrame(tick);
+      };
+
+      return {
+        start() {
+          if (running) return;
+          running = true;
+          rafId = requestAnimationFrame(tick);
+        },
+        stop() {
+          running = false;
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = 0;
+        },
+        get running() { return running; }
+      };
+    }
+
+    // ==============================
+    // Dynamic Grain (Canvas noise overlay)
+    // ==============================
+    const Grain = (() => {
+      const canvas = $('#grain');
+      if (!canvas) return { init: () => { }, resize: () => { }, start: () => { }, stop: () => { } };
+
+      const ctx = canvas.getContext('2d', { alpha: true });
+      const off = document.createElement('canvas');
+      const octx = off.getContext('2d', { willReadFrequently: true });
+
+      let t = 0;
+      let inView = true;
+
+      function resize() {
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.floor(innerWidth * dpr);
+        canvas.height = Math.floor(innerHeight * dpr);
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        off.width = 140;
+        off.height = 140;
+      }
+
+      function generateTile() {
+        const w = off.width, h = off.height;
+        const img = octx.createImageData(w, h);
+        const d = img.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const v = (Math.random() * 255) | 0;
+          d[i] = v;
+          d[i + 1] = v;
+          d[i + 2] = v;
+          d[i + 3] = 42;
+        }
+        octx.putImageData(img, 0, 0);
+      }
+
+      function frame() {
+        t += 1;
+        if (t % 2 === 0) generateTile();
+
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        const pattern = ctx.createPattern(off, 'repeat');
+        ctx.save();
+        ctx.globalAlpha = 0.35;
+        ctx.translate((t * 3) % off.width, (t * 2) % off.height);
+        ctx.fillStyle = pattern;
+        ctx.fillRect(-off.width, -off.height, w + off.width * 2, h + off.width * 2);
+        ctx.restore();
+      }
+
+      const raf = createRAFController(frame);
+
+      function updateState() {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const visible = document.visibilityState === 'visible';
+        if (reduce || !visible || !inView) raf.stop();
+        else raf.start();
+      }
+
+      function init() {
+        resize();
+        generateTile();
+
+        const obs = new IntersectionObserver((entries) => {
+          inView = entries.some(e => e.isIntersecting);
+          updateState();
+        }, { threshold: 0.01 });
+        obs.observe(canvas);
+
+        document.addEventListener('visibilitychange', updateState);
+        updateState();
+      }
+
+      return { init, resize, start: () => raf.start(), stop: () => raf.stop() };
+    })();
+
+    // ==============================
+    // Cursor Pro (mouse-follower)
+    // ==============================
+    const CursorPro = (() => {
+      function init() {
+        if (isMobile()) return;
+        if (typeof MouseFollower === 'undefined') return;
+
+        if (MouseFollower?.registerGSAP) MouseFollower.registerGSAP(gsap);
+
+        new MouseFollower({
+          speed: 0.55,
+          ease: 'expo.out',
+          skewing: 9,
+          skewingText: 4,
+          skewingIcon: 8,
+          stickDelta: 0.18,
+          stateDetection: { '-pointer': 'a,button,[data-cursor-state],[role="button"]', '-hidden': 'iframe' }
+        });
+
+        document.body.classList.add('cursor-enhanced');
+
+        const setState = (el, on) => {
+          const state = el?.dataset?.cursorState;
+          const alt = el?.dataset?.cursorStateAlt;
+          if (!state) return;
+          const c = document.querySelector('.mf-cursor');
+          if (!c) return;
+          if (on) {
+            c.classList.add(`-${state}`);
+            if (alt) c.classList.add(`-${alt}`);
+          } else {
+            c.classList.remove(`-${state}`);
+            if (alt) c.classList.remove(`-${alt}`);
+          }
+        };
+
+        const bindAll = () => {
+          $$('[data-cursor-state]').forEach(el => {
+            if (el.__mfBound) return;
+            el.__mfBound = true;
+            el.addEventListener('mouseenter', () => setState(el, true));
+            el.addEventListener('mouseleave', () => setState(el, false));
+          });
+        };
+
+        bindAll();
+        new MutationObserver(bindAll).observe(document.body, { subtree: true, childList: true });
+      }
+
+      return { init };
+    })();
+
+    // ==============================
+    // Text Scramble
+    // ==============================
+    const TextFX = (() => {
+      const CHARS = '█▓▒░<>/\\[]{}—_+*#?=01';
+
+      function scrambleTo(el, finalText, { duration = 0.55 } = {}) {
+        const len = finalText.length;
+        const start = performance.now();
+        return new Promise(resolve => {
+          const loop = (now) => {
+            const t = clamp((now - start) / (duration * 1000), 0, 1);
+            const revealCount = Math.floor(t * len);
+            let out = '';
+            for (let i = 0; i < len; i++) {
+              const ch = finalText[i];
+              if (i < revealCount) out += ch;
+              else out += (ch === ' ') ? ' ' : CHARS[(Math.random() * CHARS.length) | 0];
+            }
+            el.textContent = out;
+            if (t < 1) requestAnimationFrame(loop);
+            else {
+              el.textContent = finalText;
+              resolve();
+            }
+          };
+          requestAnimationFrame(loop);
+        });
+      }
+
+      function enableHoverScramble() {
+        $$('[data-scramble-hover]').forEach(el => {
+          if (el.__scrBound) return;
+          el.__scrBound = true;
+          el.addEventListener('mouseenter', () => {
+            const current = (el.textContent || '').trim();
+            el._scrRestore = current;
+            scrambleTo(el, current, { duration: 0.35 });
+          });
+          el.addEventListener('mouseleave', () => {
+            if (el._scrRestore != null) el.textContent = el._scrRestore;
+          });
+        });
+      }
+
+      return { scrambleTo, enableHoverScramble };
+    })();
+
+    // ==============================
+    // Kinetic Typography
+    // ==============================
+    const KineticType = (() => {
+      function split(el) {
+        if (el.__split) return;
+        const text = el.textContent;
+        el.textContent = '';
+        const frag = document.createDocumentFragment();
+        for (const ch of text) {
+          const span = document.createElement('span');
+          span.textContent = ch;
+          span.style.display = 'inline-block';
+          span.style.willChange = 'transform, filter, opacity';
+          frag.appendChild(span);
+        }
+        el.appendChild(frag);
+        el.__split = true;
+      }
+
+      function init(containerAnimation) {
+        $$('[data-kinetic]').forEach(el => {
+          split(el);
+          const spans = Array.from(el.children);
+          const section = el.closest('section') || el;
+          const st = {
+            trigger: section,
+            start: isMobile() ? 'top 75%' : 'left 70%',
+            end: isMobile() ? 'bottom 35%' : 'right 30%',
+            scrub: true,
+          };
+          if (!isMobile() && containerAnimation) st.containerAnimation = containerAnimation;
+
+          gsap.fromTo(spans,
+            {
+              yPercent: (i) => (i % 2 ? 18 : -12),
+              rotation: (i) => (i % 3 - 1) * 3,
+              filter: 'blur(6px)',
+              opacity: 0.55,
+            },
+            {
+              yPercent: 0,
+              rotation: 0,
+              filter: 'blur(0px)',
+              opacity: 1,
+              stagger: { each: 0.008, from: 'random' },
+              ease: 'none',
+              scrollTrigger: st
+            }
+          );
+
+          gsap.to(el, {
+            letterSpacing: '0.06em',
+            ease: 'none',
+            scrollTrigger: { ...st, start: isMobile() ? 'top 80%' : 'left 85%', end: isMobile() ? 'top 30%' : 'left 10%' }
+          });
+        });
+
+        $$('[data-kinetic-data]').forEach(el => {
+          const section = el.closest('section') || el;
+          const st = {
+            trigger: section,
+            start: isMobile() ? 'top 90%' : 'left 85%',
+            end: isMobile() ? 'bottom 60%' : 'right 15%',
+            scrub: true,
+          };
+          if (!isMobile() && containerAnimation) st.containerAnimation = containerAnimation;
+
+          gsap.fromTo(el,
+            { letterSpacing: '0.42em', opacity: 0.35, y: 10 },
+            { letterSpacing: '0.18em', opacity: 1, y: 0, ease: 'none', scrollTrigger: st }
+          );
+        });
+      }
+
+      return { init };
+    })();
+
+    // ==============================
+    // Disc Interaction with Zone Detection
+    // ==============================
+    const DiscControl = (() => {
+      const disc = $('#disc');
+      const zoneName = $('#zoneName');
+      const zoneTrack = $('#zoneTrack');
+      if (!disc) return { bind: () => { }, setZoneIndex: () => { }, setModeLabel: () => { }, refreshLabels: () => { } };
+
+      let down = false;
+      let rot = 240;
+      let targetRot = 240;
+      let vel = 0;
+      let lastZone = 0;
+      let allowTick = true;
+
+      const zones = CONFIG.tracks;
+
+      function getZoneFromRotation(deg) {
+        const normalizedRot = ((deg % 360) + 360) % 360;
+        if (normalizedRot >= 60 && normalizedRot < 180) return 1;
+        if (normalizedRot >= 180 && normalizedRot < 300) return 0;
+        return 2;
+      }
+
+      function zoneToRotation(zoneIndex) {
+        if (zoneIndex === 0) return 240;
+        if (zoneIndex === 1) return 120;
+        return 0; // Illimani - alineado verticalmente
+      }
+
+      function apply() {
+        disc.style.setProperty('--discRot', `${rot}deg`);
+      }
+
+      function updateZone({ emit = true } = {}) {
+        const currentZone = getZoneFromRotation(rot);
+        if (currentZone !== lastZone) {
+          lastZone = currentZone;
+          const track = zones[currentZone];
+          const t = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t : () => '';
+          if (zoneName) zoneName.textContent = (t('ui_zone') || 'ZONA ') + (currentZone + 1);
+          if (zoneTrack) zoneTrack.textContent = track.name;
+          if (emit && typeof AudioSystem !== 'undefined') {
+            AudioSystem.select('ep', currentZone, { autoplay: AudioSystem.isPlaying(), source: 'disc' });
+          }
+        }
+      }
+
+      function onDown(e) {
+        down = true;
+        disc.setPointerCapture?.(e.pointerId);
+      }
+      function onUp(e) {
+        down = false;
+        disc.releasePointerCapture?.(e.pointerId);
+      }
+      function onMove(e) {
+        if (!down) return;
+        const dx = (e.movementX || 0);
+        vel += dx * 0.35;
+        targetRot += dx * 1.2;
+      }
+
+      const raf = createRAFController(() => {
+        vel *= 0.88;
+        targetRot += vel * 0.03;
+        if (!down && Math.abs(vel) < 0.1) targetRot += 0.02;
+        rot += (targetRot - rot) * 0.12;
+        apply();
+        updateZone({ emit: true });
+      });
+
+      function setZoneIndex(zoneIndex, { animate = true, emit = false } = {}) {
+        const r = zoneToRotation(zoneIndex);
+        if (!animate) {
+          vel = 0;
+          targetRot = r;
+          rot = r;
+          apply();
+          updateZone({ emit });
+          return;
+        }
+        vel = 0;
+        targetRot = r;
+        updateZone({ emit });
+      }
+
+      function setModeLabel(mode) {
+        if (!zoneName || !zoneTrack) return;
+        const t = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t : (k) => ({ ui_archivo: 'ARCHIVO', ui_selecciona_pista: 'SELECCIONA UNA PISTA', ui_zone: 'ZONA ' }[k] || k);
+        if (mode === 'archive') {
+          zoneName.textContent = t('ui_archivo') || 'ARCHIVO';
+          zoneTrack.textContent = t('ui_selecciona_pista') || 'SELECCIONA UNA PISTA';
+        } else {
+          zoneName.textContent = (t('ui_zone') || 'ZONA ') + (lastZone + 1);
+          zoneTrack.textContent = zones[lastZone]?.name ?? '';
+        }
+      }
+
+      function bind() {
+        disc.addEventListener('pointerdown', onDown);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointermove', onMove, { passive: true });
+
+        disc.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            targetRot += (e.key === 'ArrowRight' ? 40 : -40);
+          }
+        });
+
+        const t = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t : (k) => ({ ui_zone: 'ZONA ' }[k] || k);
+        if (zoneName) zoneName.textContent = (t('ui_zone') || 'ZONA ') + 1;
+        if (zoneTrack) zoneTrack.textContent = zones[0].name;
+        apply();
+
+        const hero = $('#hero');
+        if (hero) {
+          const obs = new IntersectionObserver((entries) => {
+            allowTick = entries.some(e => e.isIntersecting);
+            if (allowTick && document.visibilityState === 'visible') raf.start();
+            else raf.stop();
+          }, { threshold: 0.12 });
+          obs.observe(hero);
+        }
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState !== 'visible') raf.stop();
+          else if (allowTick) raf.start();
+        });
+
+        raf.start();
+      }
+
+      function refreshLabels() {
+        const mode = (typeof AudioSystem !== 'undefined' && AudioSystem.getMode) ? AudioSystem.getMode() : 'ep';
+        setModeLabel(mode);
+        updateZone({ emit: false });
+      }
+
+      return { bind, setZoneIndex, setModeLabel, refreshLabels };
+    })();
+
+    // ==============================
+    // WaveSurfer + WebAudio Analyzer + Visualizer Canvas
+    // FIX #4: control de volumen también en ARCHIVE
+    // ==============================
+    const AudioSystem = (() => {
+      const audioEl = $('#audio');
+
+      // Controls - Hero
+      const btnPrev = $('#btnPrev');
+      const btnPlay = $('#btnPlay');
+      const btnNext = $('#btnNext');
+      const btnShuffle = $('#btnShuffle');
+      const btnVolume = $('#btnVolume');
+      const volumeSlider = $('#volumeSlider');
+      const volPop = $('#volPop');
+
+      // Controls - Archive
+      const btnPlayArchive = $('#btnPlayArchive');
+      const btnPrevArchive = $('#btnPrevArchive');
+      const btnNextArchive = $('#btnNextArchive');
+      const btnStopArchive = $('#btnStopArchive');
+      const btnArchiveShuffle = $('#btnArchiveShuffle');
+      const btnArchiveLoop = $('#btnArchiveLoop');
+      const btnVolumeArchive = $('#btnVolumeArchive');
+      const volumeSliderArchive = $('#volumeSliderArchive');
+      const volPopArchive = $('#volPopArchive');
+
+      // UI Elements
+      const btnPlayIcon = $('#btnPlayIcon');
+      const archivePlayIcon = $('#archivePlayIcon');
+      const trackLabel = $('#trackLabel');
+      const timeLabel = $('#timeLabel');
+      const archiveStatus = $('#archiveStatus');
+      const archiveTrackName = $('#archiveTrackName');
+      const archiveTime = $('#archiveTime');
+
+      const visHero = $('#visHero');
+      const ctxHero = visHero ? visHero.getContext('2d') : null;
+      const visArchive = $('#visArchive');
+      const ctxArchive = visArchive ? visArchive.getContext('2d') : null;
+
+      let wsHero, wsArchive;
+
+      // WebAudio
+      let ctx, analyser, src, gain;
+      let dataFreq, dataTime;
+
+      const state = {
+        mode: 'ep',
+        index: 0,
+        shuffleEP: false,
+        shuffleArchive: false,
+        loopArchive: false,
+      };
+
+      const lists = {
+        ep: CONFIG.tracks,
+        archive: CONFIG.archive
+      };
+
+      const visibility = {
+        hero: true,
+        archive: false,
+      };
+
+      function ensureAudioGraph() {
+        if (ctx) return;
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.86;
+        dataFreq = new Uint8Array(analyser.frequencyBinCount);
+        dataTime = new Uint8Array(analyser.fftSize);
+
+        gain = ctx.createGain();
+        gain.gain.value = audioEl.volume ?? 0.95;
+
+        src = ctx.createMediaElementSource(audioEl);
+        src.connect(gain);
+        gain.connect(analyser);
+        analyser.connect(ctx.destination);
+      }
+
+      function setVolume(v) {
+        const nv = clamp(v, 0, 1);
+        audioEl.volume = nv;
+        if (gain) gain.gain.value = nv;
+        if (volumeSlider) volumeSlider.value = String(nv);
+        if (volumeSliderArchive) volumeSliderArchive.value = String(nv);
+      }
+
+      function fitCanvas(c) {
+        if (!c) return;
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        const cssW = c.clientWidth || 800;
+        const cssH = c.clientHeight || 140;
+        const w = Math.floor(cssW * dpr);
+        const h = Math.floor(cssH * dpr);
+        if (c.width !== w || c.height !== h) {
+          c.width = w;
+          c.height = h;
+        }
+      }
+
+      function fmtTime(s) {
+        const m = Math.floor(s / 60).toString().padStart(2, '0');
+        const ss = Math.floor(s % 60).toString().padStart(2, '0');
+        return `${m}:${ss}`;
+      }
+
+      function updateTimeUI() {
+        if (!audioEl) return;
+        const cur = audioEl.currentTime || 0;
+        const dur = Number.isFinite(audioEl.duration) ? audioEl.duration : 0;
+        const t = dur > 0 ? `${fmtTime(cur)} / ${fmtTime(dur)}` : `${fmtTime(cur)} / 00:00`;
+        if (timeLabel) timeLabel.textContent = t;
+        if (archiveTime) archiveTime.textContent = t;
+      }
+
+      function syncPlayUI() {
+        const paused = audioEl.paused;
+        if (btnPlayIcon) btnPlayIcon.textContent = paused ? 'play_arrow' : 'pause';
+        if (archivePlayIcon) archivePlayIcon.textContent = paused ? 'play_arrow' : 'pause';
+        if (btnPlay) btnPlay.setAttribute('aria-pressed', paused ? 'false' : 'true');
+        if (btnPlayArchive) btnPlayArchive.setAttribute('aria-pressed', paused ? 'false' : 'true');
+
+        if (archiveStatus) archiveStatus.textContent = paused ? 'LISTO' : 'REPRODUCIENDO';
+      }
+
+      function setShuffleUI(which, on) {
+        const btn = which === 'ep' ? btnShuffle : btnArchiveShuffle;
+        if (!btn) return;
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.style.color = on ? 'var(--red)' : '';
+        btn.style.borderColor = on ? 'var(--red)' : 'rgba(240, 240, 240, .3)';
+      }
+
+      function setLoopUI(on) {
+        if (!btnArchiveLoop) return;
+        btnArchiveLoop.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btnArchiveLoop.style.color = on ? 'var(--red)' : '';
+        btnArchiveLoop.style.borderColor = on ? 'var(--red)' : 'rgba(240, 240, 240, .3)';
+      }
+
+      function setMode(mode) {
+        state.mode = mode;
+        DiscControl?.setModeLabel?.(mode);
+      }
+
+      function updatePlaylistUI() {
+        $$('.playlist-item').forEach((el) => {
+          const idx = parseInt(el.dataset.track);
+          const active = (state.mode === 'ep' && idx === state.index);
+          el.classList.toggle('-active', active);
+          el.setAttribute('aria-current', active ? 'true' : 'false');
+        });
+
+        const listEl = $('#trackList');
+        if (listEl) {
+          $$('.track-item', listEl).forEach((el) => {
+            const active = (state.mode === 'archive' && el.dataset.index === String(state.index));
+            el.classList.toggle('-active', active);
+            el.setAttribute('aria-current', active ? 'true' : 'false');
+          });
+        }
+      }
+
+      function updateLabelsForTrack(mode, t) {
+        const i18n = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t : (k) => ({ ui_archivo_colon: 'ARCHIVO: ', ui_zone: 'ZONA ' }[k] || k);
+        if (!t) return;
+
+        if (trackLabel) trackLabel.textContent = (i18n('ui_archivo_colon') || 'ARCHIVO: ') + t.name;
+
+        if (mode === 'ep') {
+          const zoneIdx = clamp(indexFromId('ep', t.id), 0, CONFIG.tracks.length - 1);
+          $('#zoneTrack') && ($('#zoneTrack').textContent = t.name);
+          const zn = $('#zoneName');
+          if (zn) zn.textContent = (i18n('ui_zone') || 'ZONA ') + (zoneIdx + 1);
+        }
+
+        if (archiveTrackName) archiveTrackName.textContent = t.name;
+      }
+
+      function indexFromId(mode, id) {
+        return lists[mode].findIndex(x => x.id === id);
+      }
+
+      async function select(mode, index, { autoplay = true, source = 'ui' } = {}) {
+        const list = lists[mode];
+        if (!list || !list[index]) return;
+
+        const wasPlaying = !audioEl.paused;
+        setMode(mode);
+        state.index = index;
+
+        const t = list[index];
+
+        if (mode === 'ep' && source !== 'disc') {
+          DiscControl?.setZoneIndex?.(index, { animate: true, emit: false });
+        }
+
+        updateLabelsForTrack(mode, t);
+        updatePlaylistUI();
+
+        try {
+          audioEl.src = t.url;
+          audioEl.loop = (mode === 'archive') ? state.loopArchive : false;
+          audioEl.load();
+
+          if (wsHero) wsHero.load(t.url);
+          if (wsArchive) wsArchive.load(t.url);
+        } catch (e) {
+          console.warn('Track load error:', e);
+        }
+
+        if (autoplay && (source !== 'init' || wasPlaying)) {
+          await play();
+        } else {
+          syncPlayUI();
+        }
+      }
+
+      async function play() {
+        ensureAudioGraph();
+        if (ctx && ctx.state === 'suspended') await ctx.resume();
+        try {
+          await audioEl.play();
+        } catch (e) {
+          console.warn('Play blocked (autoplay policy):', e);
+        }
+      }
+
+      function pause() { audioEl.pause(); }
+      function stop() {
+        pause();
+        audioEl.currentTime = 0;
+        const listo = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t('ui_listo') : 'LISTO';
+        if (archiveStatus) archiveStatus.textContent = listo;
+        updateTimeUI();
+      }
+
+      function isPlaying() { return !audioEl.paused; }
+
+      function next(modeOverride) {
+        const mode = modeOverride ?? state.mode;
+        const list = lists[mode];
+        if (!list?.length) return;
+
+        let idx = state.index;
+        const isShuffle = (mode === 'ep') ? state.shuffleEP : state.shuffleArchive;
+        if (isShuffle) idx = Math.floor(Math.random() * list.length);
+        else idx = (idx + 1) % list.length;
+
+        select(mode, idx, { autoplay: true, source: 'ui' });
+      }
+
+      function prev(modeOverride) {
+        const mode = modeOverride ?? state.mode;
+        const list = lists[mode];
+        if (!list?.length) return;
+
+        if (audioEl.currentTime > 3) {
+          audioEl.currentTime = 0;
+          return;
+        }
+
+        const idx = (state.index - 1 + list.length) % list.length;
+        select(mode, idx, { autoplay: true, source: 'ui' });
+      }
+
+      function toggleShuffle(mode) {
+        if (mode === 'ep') {
+          state.shuffleEP = !state.shuffleEP;
+          setShuffleUI('ep', state.shuffleEP);
+        } else {
+          state.shuffleArchive = !state.shuffleArchive;
+          setShuffleUI('archive', state.shuffleArchive);
+        }
+      }
+
+      function toggleLoop() {
+        state.loopArchive = !state.loopArchive;
+        audioEl.loop = state.loopArchive;
+        setLoopUI(state.loopArchive);
+      }
+
+      // ------------------------------
+      // Visualizer RAF
+      // ------------------------------
+      function drawViz(ctx2d, w, h, freq, time, { accent = '255,0,0' } = {}) {
+        if (!ctx2d) return;
+        ctx2d.clearRect(0, 0, w, h);
+        ctx2d.fillStyle = 'rgba(5,5,5,0.82)';
+        ctx2d.fillRect(0, 0, w, h);
+
+        ctx2d.fillStyle = 'rgba(240,240,240,0.05)';
+        const stepSL = Math.max(3, Math.round(h / 32));
+        for (let y = 0; y < h; y += stepSL) ctx2d.fillRect(0, y, w, 1);
+
+        const bars = 96;
+        const step = Math.floor(freq.length / bars);
+        const bw = w / bars;
+
+        for (let i = 0; i < bars; i++) {
+          const v = (freq[i * step] || 0) / 255;
+          const bh = v * (h * 0.70);
+          const x = i * bw;
+          const y = h - bh;
+          ctx2d.fillStyle = `rgba(${accent},${0.18 + v * 0.82})`;
+          ctx2d.fillRect(x + 1, y, Math.max(1, bw - 2), bh);
+        }
+
+        ctx2d.strokeStyle = 'rgba(240,240,240,0.78)';
+        ctx2d.lineWidth = 1;
+        ctx2d.beginPath();
+        for (let i = 0; i < time.length; i++) {
+          const t = time[i] / 255;
+          const yy = (t * h);
+          const xx = (i / (time.length - 1)) * w;
+          if (i === 0) ctx2d.moveTo(xx, yy);
+          else ctx2d.lineTo(xx, yy);
+        }
+        ctx2d.stroke();
+
+        ctx2d.strokeStyle = `rgba(${accent},0.35)`;
+        ctx2d.beginPath();
+        ctx2d.moveTo(0, h * 0.5);
+        ctx2d.lineTo(w, h * 0.5);
+        ctx2d.stroke();
+      }
+
+      const vizRAF = createRAFController(() => {
+        try {
+          if (analyser && !audioEl.paused) {
+            analyser.getByteFrequencyData(dataFreq);
+            analyser.getByteTimeDomainData(dataTime);
+          } else {
+            const now = performance.now() * 0.001;
+            for (let i = 0; i < dataFreq.length; i++) dataFreq[i] = (i % 7 === 0) ? (Math.random() * 35) : 0;
+            for (let i = 0; i < dataTime.length; i++) dataTime[i] = 128 + Math.sin(i * 0.04 + now * 3.5) * 10;
+          }
+
+          if (visibility.hero && visHero) {
+            fitCanvas(visHero);
+            drawViz(ctxHero, visHero.width, visHero.height, dataFreq, dataTime);
+          }
+
+          if (visibility.archive && visArchive) {
+            fitCanvas(visArchive);
+            drawViz(ctxArchive, visArchive.width, visArchive.height, dataFreq, dataTime);
+          }
+        } catch (e) {
+          console.error(e);
+          vizRAF.stop();
+        }
+      });
+
+      function updateVizState() {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const visible = document.visibilityState === 'visible';
+        const any = visibility.hero || visibility.archive;
+        if (reduce || !visible || !any) vizRAF.stop();
+        else vizRAF.start();
+      }
+
+      function setCanvasVisible(which, v) {
+        visibility[which] = v;
+        updateVizState();
+      }
+
+      function initWaveSurfer() {
+        try {
+          if ($('#waveHero') && typeof WaveSurfer !== 'undefined') {
+            wsHero = WaveSurfer.create({
+              container: '#waveHero',
+              media: audioEl,
+              backend: 'MediaElement',
+              height: 64,
+              barWidth: 2,
+              barGap: 1,
+              barRadius: 2,
+              normalize: true,
+              waveColor: 'rgba(240,240,240,.35)',
+              progressColor: 'rgba(255,0,0,.95)',
+              cursorWidth: 0,
+              interact: true
+            });
+          }
+
+          if ($('#waveArchive') && typeof WaveSurfer !== 'undefined') {
+            wsArchive = WaveSurfer.create({
+              container: '#waveArchive',
+              media: audioEl,
+              backend: 'MediaElement',
+              height: 64,
+              barWidth: 2,
+              barGap: 1,
+              barRadius: 2,
+              normalize: true,
+              waveColor: 'rgba(240,240,240,.28)',
+              progressColor: 'rgba(255,0,0,.95)',
+              cursorWidth: 0,
+              interact: true
+            });
+          }
+        } catch (e) {
+          console.warn('WaveSurfer init error:', e);
+        }
+      }
+
+      const listEl = $('#trackList');
+      function renderTrackList(filter = '') {
+        if (!listEl) return;
+        const q = filter.trim().toLowerCase();
+        listEl.innerHTML = '';
+
+        CONFIG.archive
+          .map((t, idx) => ({ t, idx }))
+          .filter(({ t }) => !q || t.name.toLowerCase().includes(q))
+          .forEach(({ t, idx }) => {
+            const li = document.createElement('li');
+            li.className = 'track-item';
+            li.setAttribute('role', 'button');
+            li.setAttribute('tabindex', '0');
+            li.setAttribute('aria-label', `Reproducir: ${t.name}`);
+            li.setAttribute('data-cursor-state', 'link');
+            li.setAttribute('data-scramble-hover', '');
+            li.dataset.id = t.id;
+            li.dataset.index = String(idx);
+            li.innerHTML = `<span>${t.name}</span><span>${t.dur}</span>`;
+
+            onPressLikeButton(li, () => {
+              select('archive', idx, { autoplay: true, source: 'ui' });
+            });
+
+            listEl.appendChild(li);
+          });
+
+        updatePlaylistUI();
+      }
+
+      function bind() {
+        initWaveSurfer();
+
+        // Init volume
+        setVolume(parseFloat(volumeSlider?.value || volumeSliderArchive?.value || '0.95'));
+
+        // a11y: keyboard activation for EP playlist items
+        $$('.playlist-item').forEach((el) => {
+          onPressLikeButton(el, () => {
+            const idx = parseInt(el.dataset.track);
+            if (!Number.isNaN(idx)) select('ep', idx, { autoplay: true, source: 'ui' });
+          });
+        });
+
+        // Controls - EP
+        btnPlay && btnPlay.addEventListener('click', () => {
+          setMode('ep');
+          if (audioEl.paused) play(); else pause();
+        });
+        btnNext && btnNext.addEventListener('click', () => { setMode('ep'); next('ep'); });
+        btnPrev && btnPrev.addEventListener('click', () => { setMode('ep'); prev('ep'); });
+        btnShuffle && btnShuffle.addEventListener('click', () => toggleShuffle('ep'));
+
+        // Volume popover (Hero)
+        btnVolume && btnVolume.addEventListener('click', () => {
+          const open = volPop.classList.toggle('-open');
+          btnVolume.setAttribute('aria-expanded', open ? 'true' : 'false');
+          if (open) volPopArchive?.classList.remove('-open');
+          btnVolumeArchive?.setAttribute('aria-expanded', 'false');
+        });
+        volumeSlider && volumeSlider.addEventListener('input', () => setVolume(parseFloat(volumeSlider.value)), { passive: true });
+
+        // Controls - Archive
+        btnPlayArchive && btnPlayArchive.addEventListener('click', () => {
+          setMode('archive');
+          if (audioEl.paused) play(); else pause();
+        });
+        btnNextArchive && btnNextArchive.addEventListener('click', () => { setMode('archive'); next('archive'); });
+        btnPrevArchive && btnPrevArchive.addEventListener('click', () => { setMode('archive'); prev('archive'); });
+        btnStopArchive && btnStopArchive.addEventListener('click', stop);
+        btnArchiveShuffle && btnArchiveShuffle.addEventListener('click', () => toggleShuffle('archive'));
+        btnArchiveLoop && btnArchiveLoop.addEventListener('click', toggleLoop);
+
+        // Volume popover (Archive)
+        btnVolumeArchive && btnVolumeArchive.addEventListener('click', () => {
+          const open = volPopArchive.classList.toggle('-open');
+          btnVolumeArchive.setAttribute('aria-expanded', open ? 'true' : 'false');
+          if (open) volPop?.classList.remove('-open');
+          btnVolume?.setAttribute('aria-expanded', 'false');
+        });
+        volumeSliderArchive && volumeSliderArchive.addEventListener('input', () => setVolume(parseFloat(volumeSliderArchive.value)), { passive: true });
+
+        // Audio events
+        audioEl.addEventListener('play', () => { syncPlayUI(); updateVizState(); });
+        audioEl.addEventListener('pause', () => { syncPlayUI(); updateVizState(); });
+        audioEl.addEventListener('ended', () => {
+          next(state.mode);
+        });
+        audioEl.addEventListener('timeupdate', updateTimeUI);
+        audioEl.addEventListener('loadedmetadata', updateTimeUI);
+
+        // Search
+        const search = $('#archiveSearch');
+        search && search.addEventListener('input', () => renderTrackList(search.value), { passive: true });
+
+        // IO for visualizers
+        const heroObs = new IntersectionObserver((entries) => {
+          setCanvasVisible('hero', entries.some(e => e.isIntersecting));
+        }, { threshold: 0.12, rootMargin: '120px' });
+
+        const archiveObs = new IntersectionObserver((entries) => {
+          setCanvasVisible('archive', entries.some(e => e.isIntersecting));
+        }, { threshold: 0.12, rootMargin: '120px' });
+
+        if (visHero) heroObs.observe(visHero);
+        if (visArchive) archiveObs.observe(visArchive);
+
+        document.addEventListener('visibilitychange', updateVizState);
+
+        // Initial UI state
+        setShuffleUI('ep', state.shuffleEP);
+        setShuffleUI('archive', state.shuffleArchive);
+        setLoopUI(state.loopArchive);
+        syncPlayUI();
+        updateTimeUI();
+        renderTrackList();
+
+        // Load initial EP track (no autoplay)
+        select('ep', state.index, { autoplay: false, source: 'init' });
+      }
+
+      function getMode() { return state.mode; }
+
+      function refreshLabels() {
+        const list = lists[state.mode];
+        const track = list && list[state.index];
+        updateLabelsForTrack(state.mode, track);
+        if (state.mode === 'archive' && !track) {
+          const i18n = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t : (k) => ({ ui_selecciona_pista: 'SELECCIONA UNA PISTA', ui_listo: 'LISTO' }[k] || k);
+          if (archiveTrackName) archiveTrackName.textContent = i18n('ui_selecciona_pista');
+          if (archiveStatus) archiveStatus.textContent = i18n('ui_listo');
+        }
+      }
+
+      return {
+        bind,
+        ensureAudioGraph,
+        select,
+        setCanvasVisible,
+        isPlaying,
+        getMode,
+        refreshLabels,
+      };
+    })();
+
+    // ==============================
+    // Gallery (Swiper)
+    // ==============================
+    const Gallery = (() => {
+      const modal = $('#galleryModal');
+      const closeBtn = $('#galleryClose');
+      let swiper;
+
+      function open() {
+        if (!modal) return;
+        modal.classList.add('-open');
+        if (!swiper && typeof Swiper !== 'undefined') {
+          swiper = new Swiper('#gallerySwiper', {
+            speed: 650,
+            loop: true,
+            grabCursor: true,
+            keyboard: { enabled: true },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+          });
+        }
+      }
+
+      function close() {
+        if (!modal) return;
+        modal.classList.remove('-open');
+      }
+
+      function bind() {
+        closeBtn && closeBtn.addEventListener('click', close);
+        modal && modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      }
+
+      return { bind, open, close };
+    })();
+
+    // ==============================
+    // Scroll System
+    // ==============================
+    const ScrollSystem = (() => {
+      gsap.registerPlugin(ScrollTrigger);
+      let lenis;
+      let scrollTween;
+
+      function initLenis() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (typeof Lenis === 'undefined') return;
+
+        lenis = new Lenis({
+          duration: 1.0,
+          smoothWheel: true,
+          smoothTouch: false,
+          wheelMultiplier: 1.2,
+          orientation: 'vertical',
+          gestureOrientation: 'vertical'
+        });
+
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((t) => lenis.raf(t * 1000));
+        gsap.ticker.lagSmoothing(0);
+      }
+
+      function layout() {
+        const track = $('#track');
+        const sections = $$('.panel');
+        const progress = $('#progress');
+        if (!track || sections.length === 0) return;
+
+        ScrollTrigger.getAll().forEach(st => st.kill());
+        if (scrollTween) scrollTween.kill();
+
+        if (!isMobile()) {
+          scrollTween = gsap.to(track, {
+            x: () => -(track.scrollWidth - window.innerWidth),
+            ease: 'none',
+            scrollTrigger: {
+              trigger: '#scrollContainer',
+              pin: true,
+              scrub: 1,
+              end: () => `+=${track.scrollWidth - window.innerWidth}`,
+              invalidateOnRefresh: true,
+              anticipatePin: 1,
+              onUpdate: (self) => {
+                if (progress) progress.style.width = `${self.progress * 100}%`;
+              },
+              snap: {
+                snapTo: 1 / (sections.length - 1),
+                duration: { min: 0.2, max: 0.5 },
+                delay: 0.05,
+                ease: 'power2.out',
+                inertia: true
+              }
+            }
+          });
+
+          $$('[data-reveal]').forEach(el => {
+            gsap.to(el, {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              ease: 'power3.out',
+              scrollTrigger: { trigger: el, containerAnimation: scrollTween, start: 'left 85%' }
+            });
+          });
+
+          KineticType.init(scrollTween);
+        } else {
+          if (progress) progress.style.width = '0%';
+
+          $$('[data-reveal]').forEach(el => {
+            gsap.to(el, {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              ease: 'power3.out',
+              scrollTrigger: { trigger: el, start: 'top 85%' }
+            });
+          });
+
+          KineticType.init(null);
+
+          ScrollTrigger.create({
+            trigger: document.body,
+            start: 'top top',
+            end: 'bottom bottom',
+            onUpdate: self => {
+              if (progress) progress.style.width = `${self.progress * 100}%`;
+            }
+          });
+        }
+
+        ScrollTrigger.refresh();
+      }
+
+      function scrollToSection(index) {
+        const sections = $$('.panel');
+        if (index < 0 || index >= sections.length) return;
+
+        if (!isMobile()) {
+          const targetScroll = (index / (sections.length - 1)) * (document.body.scrollHeight - window.innerHeight);
+          if (lenis) lenis.scrollTo(targetScroll, { duration: 1.2 });
+          else window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        } else {
+          const targetEl = sections[index];
+          if (lenis) lenis.scrollTo(targetEl, { duration: 1.2 });
+          else targetEl.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
+      function bindNav() {
+        const navEls = $$('.nav-link,[data-nav]');
+        navEls.forEach(el => {
+          el.addEventListener('click', (e) => {
+            e.preventDefault();
+            const idx = parseInt(el.dataset.nav);
+            if (!Number.isNaN(idx)) {
+              scrollToSection(idx);
+            } else {
+              const id = el.getAttribute('href');
+              const targetEl = id ? $(id) : null;
+              if (targetEl) {
+                if (lenis) lenis.scrollTo(targetEl, { duration: 1.2 });
+                else targetEl.scrollIntoView({ behavior: 'smooth' });
+              }
+            }
+          });
+        });
+
+        const sections = $$('.panel');
+        const links = $$('.nav-link');
+        const colorReset = () => links.forEach(l => l.style.color = '');
+
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const id = entry.target.id;
+            colorReset();
+            const a = document.querySelector(`a[href="#${id}"]`);
+            if (a) a.style.color = (id === 'contact') ? '#050505' : 'var(--red)';
+
+            // Toggle contact-active class on body for cursor and nav hover styles
+            if (id === 'contact') {
+              document.body.classList.add('contact-active');
+            } else {
+              document.body.classList.remove('contact-active');
+            }
+          });
+        }, { threshold: 0.35 });
+
+        sections.forEach(s => obs.observe(s));
+
+        // Add immediate mouse detection for contact section contrast
+        const contactSection = document.getElementById('contact');
+        if (contactSection) {
+          contactSection.addEventListener('mouseenter', () => document.body.classList.add('contact-active'));
+          contactSection.addEventListener('mouseleave', () => {
+            // Only remove if not kept active by intersection observer (optional, but safer to just let observer handle main state)
+            // But for cursor purposes, if mouse leaves, we want to revert.
+            // Check if we are scrolled into it? 
+            // Actually, if we leave the section with mouse, we likely want to revert unless the nav needs it.
+            // Let's stick to simple toggle, observer will re-assert if needed.
+            if (obs) {
+              // The observer is async. Let's just remove it. 
+              // If the user scrolls and mouse stays relative to viewport, specific behaviors apply.
+              // Simple remove is safest for "mouse is not over red".
+              document.body.classList.remove('contact-active');
+            }
+          });
+        }
+      }
+
+      function bind() {
+        initLenis();
+        layout();
+        bindNav();
+
+        window.addEventListener('resize', () => {
+          clearTimeout(window.__rsz);
+          window.__rsz = setTimeout(() => {
+            Grain.resize();
+            layout();
+          }, 150);
+        });
+      }
+
+      return { bind, scrollToSection };
+    })();
+
+    // ==============================
+    // Infinite Canvas (About)
+    // ==============================
+    const InfiniteCanvas = (() => {
+      let wrapper, canvas;
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let x = 0, y = 0;
+      let vx = 0, vy = 0;
+      let pointerId = null;
+      let moved = false;
+      let lastMoveT = 0;
+
+      const limits = { minX: -860, maxX: 860, minY: -680, maxY: 680 };
+
+      const physics = {
+        dragDamping: 0.9,
+        inertiaFriction: 0.94,
+        inertiaMinV: 0.12,
+        maxV: 46,
+        elastic: 0.26
+      };
+
+      function clampWithElastic(value, min, max) {
+        if (value < min) return min + (value - min) * physics.elastic;
+        if (value > max) return max + (value - max) * physics.elastic;
+        return value;
+      }
+
+      function clampHard(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function updateTransform() {
+        if (!canvas) return;
+        canvas.style.transform = `translate(${x}px, ${y}px)`;
+      }
+
+      const inertiaRAF = createRAFController(() => {
+        vx *= physics.inertiaFriction;
+        vy *= physics.inertiaFriction;
+
+        x = clampWithElastic(x + vx, limits.minX, limits.maxX);
+        y = clampWithElastic(y + vy, limits.minY, limits.maxY);
+        updateTransform();
+
+        if (Math.abs(vx) < physics.inertiaMinV && Math.abs(vy) < physics.inertiaMinV) {
+          inertiaRAF.stop();
+          const tx = clampHard(x, limits.minX, limits.maxX);
+          const ty = clampHard(y, limits.minY, limits.maxY);
+          gsap.to({ px: x, py: y }, {
+            px: tx,
+            py: ty,
+            duration: 0.55,
+            ease: 'power3.out',
+            onUpdate() {
+              x = this.targets()[0].px;
+              y = this.targets()[0].py;
+              updateTransform();
+            }
+          });
+        }
+      });
+
+      function onPointerDown(e) {
+        if (!wrapper || !canvas) return;
+
+        pointerId = e.pointerId;
+        wrapper.setPointerCapture?.(pointerId);
+
+        isDragging = true;
+        moved = false;
+        inertiaRAF.stop();
+
+        startX = e.clientX - x;
+        startY = e.clientY - y;
+
+        vx = 0;
+        vy = 0;
+        lastMoveT = performance.now();
+
+        wrapper.style.cursor = 'grabbing';
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        const now = performance.now();
+        const dt = Math.max(8, now - lastMoveT);
+        lastMoveT = now;
+
+        const nx = e.clientX - startX;
+        const ny = e.clientY - startY;
+
+        const dx = nx - x;
+        const dy = ny - y;
+
+        if (Math.abs(dx) + Math.abs(dy) > 2) moved = true;
+
+        vx = clamp(dx * (16 / dt), -physics.maxV, physics.maxV) * physics.dragDamping;
+        vy = clamp(dy * (16 / dt), -physics.maxV, physics.maxV) * physics.dragDamping;
+
+        x = clampWithElastic(nx, limits.minX, limits.maxX);
+        y = clampWithElastic(ny, limits.minY, limits.maxY);
+        updateTransform();
+      }
+
+      function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        wrapper?.releasePointerCapture?.(pointerId);
+        pointerId = null;
+        wrapper.style.cursor = 'grab';
+
+        if (moved) inertiaRAF.start();
+      }
+
+      function init() {
+        wrapper = $('#aboutCanvasWrapper');
+        canvas = $('#aboutCanvas');
+        if (!wrapper || !canvas) return;
+
+        wrapper.addEventListener('pointerdown', onPointerDown);
+        wrapper.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+
+        canvas.querySelectorAll('img').forEach(img => {
+          img.addEventListener('dragstart', e => e.preventDefault());
+        });
+
+        wrapper.addEventListener('dblclick', () => {
+          inertiaRAF.stop();
+          gsap.to({ px: x, py: y }, {
+            px: 0,
+            py: 0,
+            duration: 0.65,
+            ease: 'power3.out',
+            onUpdate() {
+              x = this.targets()[0].px;
+              y = this.targets()[0].py;
+              updateTransform();
+            }
+          });
+        });
+
+        updateTransform();
+      }
+
+      return { init };
+    })();
+
+    // ==============================
+    // About Photo Modal + Individual Photo Drag
+    // ==============================
+    const AboutPhotoModal = (() => {
+      const modal = $('#photoModal');
+      const img = $('#photoModalImg');
+      const title = $('#photoModalTitle');
+      const closeBtn = $('#photoModalClose');
+      const prevBtn = $('#photoPrev');
+      const nextBtn = $('#photoNext');
+      const downloadBtn = $('#photoDownload');
+
+      let items = [];
+      let index = 0;
+
+      // Variables para arrastre individual de fotos
+      let draggedPhoto = null;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let photoOriginalLeft = '';
+      let photoOriginalTop = '';
+      let photoOriginalTransform = '';
+      let dragDistance = 0;
+      let expandedPhoto = null;
+
+      function updateCursorVisibility() {
+        const modalOpen = modal?.classList.contains('-open');
+        if (modalOpen || expandedPhoto) document.body.classList.add('cursor-show-native');
+        else document.body.classList.remove('cursor-show-native');
+      }
+
+      function openAt(i) {
+        if (!modal || !img) return;
+        index = clamp(i, 0, items.length - 1);
+        const el = items[index];
+        const source = $('img', el)?.src;
+        const t = el.dataset.photoTitle || $('img', el)?.alt || 'FOTO';
+
+        img.src = source;
+        img.alt = t;
+        if (title) title.textContent = `FOTO // ${t}`;
+
+        modal.classList.add('-open');
+        updateCursorVisibility();
+
+        gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: 'power2.out' });
+        closeBtn?.focus();
+      }
+
+      function close() {
+        if (!modal) return;
+        gsap.to(modal, {
+          opacity: 0,
+          duration: 0.2,
+          ease: 'power2.in',
+          onComplete: () => {
+            modal.classList.remove('-open');
+            modal.style.opacity = '';
+            updateCursorVisibility();
+          }
+        });
+      }
+
+      function prev() { openAt((index - 1 + items.length) % items.length); }
+      function next() { openAt((index + 1) % items.length); }
+
+      async function downloadCurrentPhoto() {
+        if (!img || !img.src) return;
+        try {
+          const response = await fetch(img.src);
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const fileName = (title?.textContent?.replace('FOTO // ', '') || 'foto') + '.jpg';
+          a.download = fileName.replace(/[^a-zA-Z0-9\-_\.áéíóúñÁÉÍÓÚÑ\s]/g, '_');
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          // Fallback: open in new tab
+          window.open(img.src, '_blank');
+        }
+      }
+
+      // Colapsar foto expandida
+      function collapsePhoto() {
+        if (!expandedPhoto) return;
+        expandedPhoto.classList.remove('-expanded');
+        expandedPhoto.style.left = photoOriginalLeft;
+        expandedPhoto.style.top = photoOriginalTop;
+        expandedPhoto.style.transform = photoOriginalTransform;
+        expandedPhoto = null;
+        if (!modal?.classList.contains('-open')) document.body.classList.remove('cursor-show-native');
+      }
+
+      // Handlers para arrastre de fotos individuales
+      function onPhotoDragStart(e) {
+        const photo = e.target.closest('.about-photo');
+        if (!photo || expandedPhoto) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        draggedPhoto = photo;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        photoOriginalLeft = photo.style.left;
+        photoOriginalTop = photo.style.top;
+        photoOriginalTransform = photo.style.transform;
+        dragDistance = 0;
+
+        photo.classList.add('-dragging');
+        photo.setPointerCapture(e.pointerId);
+      }
+
+      function onPhotoDragMove(e) {
+        if (!draggedPhoto) return;
+
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        dragDistance = Math.sqrt(dx * dx + dy * dy);
+
+        // Mover la foto mientras se arrastra
+        const currentLeft = parseFloat(photoOriginalLeft) || 50;
+        const currentTop = parseFloat(photoOriginalTop) || 50;
+
+        // Convertir px a % aproximado (basado en el canvas de 200%)
+        const wrapper = draggedPhoto.closest('.about-canvas-wrapper');
+        if (wrapper) {
+          const pxToPercentX = (dx / wrapper.offsetWidth) * 100;
+          const pxToPercentY = (dy / wrapper.offsetHeight) * 100;
+          draggedPhoto.style.left = `${currentLeft + pxToPercentX}%`;
+          draggedPhoto.style.top = `${currentTop + pxToPercentY}%`;
+        }
+      }
+
+      function onPhotoDragEnd(e) {
+        if (!draggedPhoto) return;
+
+        const photo = draggedPhoto;
+        photo.classList.remove('-dragging');
+        photo.releasePointerCapture(e.pointerId);
+
+        // Si arrastró más de 80px, expandir la foto
+        if (dragDistance > 80) {
+          expandedPhoto = photo;
+          photo.classList.add('-expanded');
+          document.body.classList.add('cursor-show-native');
+        } else {
+          // Restaurar posición original
+          photo.style.left = photoOriginalLeft;
+          photo.style.top = photoOriginalTop;
+          photo.style.transform = photoOriginalTransform;
+        }
+
+        draggedPhoto = null;
+        dragDistance = 0;
+      }
+
+      function bind() {
+        items = $$('.about-photo');
+
+        items.forEach((el, i) => {
+          // Click normal abre el modal
+          el.addEventListener('click', (e) => {
+            // Solo abrir si no estamos arrastrando y no hay foto expandida
+            if (dragDistance < 10 && !expandedPhoto) {
+              openAt(i);
+            } else if (expandedPhoto === el) {
+              // Click en foto expandida la colapsa
+              collapsePhoto();
+            }
+          });
+
+          // Eventos de arrastre
+          el.addEventListener('pointerdown', onPhotoDragStart);
+        });
+
+        // Eventos globales para arrastre
+        window.addEventListener('pointermove', onPhotoDragMove);
+        window.addEventListener('pointerup', onPhotoDragEnd);
+
+        // Click fuera de foto expandida la colapsa
+        document.addEventListener('click', (e) => {
+          if (expandedPhoto && !e.target.closest('.about-photo')) {
+            collapsePhoto();
+          }
+        });
+
+        // Escape colapsa foto expandida
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && expandedPhoto) {
+            collapsePhoto();
+            return;
+          }
+        });
+
+        closeBtn && closeBtn.addEventListener('click', close);
+        prevBtn && prevBtn.addEventListener('click', prev);
+        nextBtn && nextBtn.addEventListener('click', next);
+        downloadBtn && downloadBtn.addEventListener('click', downloadCurrentPhoto);
+
+        modal && modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        window.addEventListener('keydown', (e) => {
+          if (!modal?.classList.contains('-open')) return;
+          if (e.key === 'Escape') close();
+          if (e.key === 'ArrowLeft') prev();
+          if (e.key === 'ArrowRight') next();
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            close();
+          }
+        });
+      }
+
+      return { bind };
+    })();
+
+    // ==============================
+    // TV System
+    // ==============================
+    const TVSystem = (() => {
+      const iframe = $('#tvIframe');
+      const title = $('#tvTitle');
+      const sub = $('#tvSub');
+      const list = $('#tvList');
+      const openBtn = $('#tvOpenYouTube');
+      const copyBtn = $('#tvCopyLink');
+
+      let active = 0;
+
+      function ytUrl(id) {
+        return `https://www.youtube.com/watch?v=${id}`;
+      }
+
+      function ytEmbed(id) {
+        return `https://www.youtube.com/embed/${id}?autoplay=0&mute=1&rel=0&modestbranding=1`;
+      }
+
+      function setActive(i) {
+        active = clamp(i, 0, CONFIG.videos.length - 1);
+        const v = CONFIG.videos[active];
+        if (!v) return;
+
+        if (iframe) iframe.src = ytEmbed(v.id);
+        if (title) title.textContent = v.title;
+        if (sub) sub.textContent = `THE SIX // ${v.sub}`;
+        if (openBtn) openBtn.href = ytUrl(v.id);
+
+        if (list) {
+          $$('.tv-item', list).forEach((el, idx) => {
+            const on = idx === active;
+            el.classList.toggle('-active', on);
+            el.setAttribute('aria-current', on ? 'true' : 'false');
+          });
+        }
+      }
+
+      function render() {
+        if (!list) return;
+        list.innerHTML = '';
+
+        CONFIG.videos.forEach((v, i) => {
+          const li = document.createElement('li');
+          li.className = 'tv-item';
+          li.setAttribute('role', 'button');
+          li.setAttribute('tabindex', '0');
+          li.setAttribute('data-cursor-state', 'link');
+          li.innerHTML = `<span>${v.title}</span><span>${v.dur}</span>`;
+
+          onPressLikeButton(li, () => setActive(i));
+
+          list.appendChild(li);
+        });
+
+        setActive(0);
+      }
+
+      function bind() {
+        render();
+
+        copyBtn && copyBtn.addEventListener('click', async () => {
+          const v = CONFIG.videos[active];
+          if (!v) return;
+          const url = ytUrl(v.id);
+          try {
+            await navigator.clipboard.writeText(url);
+            copyBtn.textContent = 'COPIADO';
+            setTimeout(() => { copyBtn.textContent = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t('btn_copy') : 'COPIAR'; }, 900);
+          } catch {
+            const tmp = document.createElement('input');
+            tmp.value = url;
+            document.body.appendChild(tmp);
+            tmp.select();
+            document.execCommand('copy');
+            tmp.remove();
+            copyBtn.textContent = 'COPIADO';
+            setTimeout(() => { copyBtn.textContent = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t('btn_copy') : 'COPIAR'; }, 900);
+          }
+        });
+      }
+
+      return { bind };
+    })();
+
+    // ==============================
+    // GENERADOR DE GALERÍA DINÁMICA
+    // ==============================
+    const GalleryLoader = (() => {
+      // 1. Definición de las zonas en el canvas (porcentajes X, Y)
+      // El canvas mide 200% de ancho y 200% de alto.
+      // 0,0 es arriba izq. | 100,100 es el centro real de la pantalla inicial.
+      const ZONES = {
+        '01': { x: 15, y: 15, label: 'SALA DE ENSAYO' },      // Arriba Izquierda
+        '02': { x: 40, y: 15, label: 'EL ALTO' },             // Arriba Centro
+        '03': { x: 70, y: 15, label: 'ORURO' },               // Arriba Derecha
+        '04': { x: 85, y: 25, label: 'SANTA CRUZ' },          // Extremo Derecha
+        '05': { x: 85, y: 45, label: 'TARIJA' },              // Centro Derecha
+        '06': { x: 70, y: 45, label: 'COCHABAMBA' },          // Centro Derecha interior
+        '07': { x: 50, y: 50, label: 'LA PAZ' },              // CENTRO (Núcleo)
+        '08': { x: 20, y: 65, label: 'GRABACIÓN PRAYER' },    // Abajo Izquierda
+        '09': { x: 50, y: 80, label: 'GRABACIÓN EP' },        // Abajo Centro
+        '10': { x: 80, y: 80, label: 'SESIÓN DE FOTOS' }      // Abajo Derecha
+      };
+
+      // 2. Tu lista de archivos (convertidos a JPG/PNG)
+      // Puedes agregar o quitar fotos aquí y se acomodarán solas.
+      const IMAGES = [
+        // 01 - SALA DE ENSAYO
+        { id: '01', file: '01 - the SIX - Sala de ensayo.jpg', title: 'Sala de Ensayo' },
+
+        // 02 - EL ALTO
+        { id: '02', file: '02 - the SIX - El Alto (Casa de Zippo).jpg', title: 'Casa de Zippo' },
+        { id: '02', file: '02 - the SIX - El Alto (El Bunker Fest).jpg', title: 'El Bunker Fest' },
+        { id: '02', file: '02 - the SIX - El Alto (La Oveja Negra).jpg', title: 'La Oveja Negra' },
+        { id: '02', file: '02 - the SIX - El Alto (Presentación EP_a).jpg', title: 'Presentación EP I' },
+        { id: '02', file: '02 - the SIX - El Alto (Presentación EP_b).jpg', title: 'Presentación EP II' },
+        { id: '02', file: '02 - the SIX - El Alto (Presentación EP_c).jpg', title: 'Presentación EP III' },
+        { id: '02', file: '02 - the SIX - El Alto (Presentación EP_d).jpg', title: 'Presentación EP IV' },
+
+        // 03-06 GIRAS INTERIOR
+        { id: '03', file: '03 - the SIX - Oruro.jpg', title: 'Gira Oruro' },
+        { id: '04', file: '04 - the SIX - Santa Cruz.jpg', title: 'Gira Santa Cruz' },
+        { id: '05', file: '05 - the SIX - Tarija.jpg', title: 'Gira Tarija' },
+        { id: '06', file: '06 - the SIX - Cochabamba.jpg', title: 'Gira Cochabamba' },
+
+        // 07 - LA PAZ
+        { id: '07', file: '07 - the SIX - La Paz (Achocalla).jpg', title: 'Achocalla' },
+        { id: '07', file: '07 - the SIX - La Paz (Almatroste).jpg', title: 'Almatroste' },
+        { id: '07', file: '07 - the SIX - La Paz (Feria del Prado).jpg', title: 'Feria del Prado' },
+        { id: '07', file: '07 - the SIX - La Paz (Las Calderas_v1).jpg', title: 'Las Calderas I' },
+        { id: '07', file: '07 - the SIX - La Paz (Las Calderas_v2).jpg', title: 'Las Calderas II' },
+        { id: '07', file: '07 - the SIX - La Paz (Las Calderas_v3).jpg', title: 'Las Calderas III' },
+        { id: '07', file: '07 - the SIX - La Paz (Megafest2016).jpg', title: 'Megafest 2016' },
+        { id: '07', file: '07 - the SIX - La Paz (TV).jpg', title: 'Entrevista TV' },
+
+        // 08 - GRABACIÓN PRAYER
+        { id: '08', file: '08 - the SIX - Grabación Prayer.jpg', title: 'Studio Prayer' },
+        { id: '08', file: '08 - the SIX - Grabación Prayer_a.jpg', title: 'Grabación Prayer I' },
+        { id: '08', file: '08 - the SIX - Grabación Prayer_b.jpg', title: 'Grabación Prayer II' },
+        { id: '08', file: '08 - the SIX - Grabación Prayer_c.jpg', title: 'Grabación Prayer III' },
+        { id: '08', file: '08 - the SIX - Grabación Prayer_d.jpg', title: 'Grabación Prayer IV' },
+        { id: '08', file: '08 - the SIX - Grabación Prayer_e.jpg', title: 'Grabación Prayer V' },
+        { id: '08', file: '08 - the SIX - Grabación Prayer_f.jpg', title: 'Grabación Prayer VI' },
+
+        // 09 - GRABACIÓN EP
+        { id: '09', file: '09 - the SIX - Grabación EP (Alvaro Gaviota).jpg', title: 'Prod. Alvaro Gaviota' },
+        { id: '09', file: '09 - the SIX - Grabación EP.jpg', title: 'Grabación EP' },
+        { id: '09', file: '09 - the SIX - Grabación EP_a.jpg', title: 'Grabación EP I' },
+        { id: '09', file: '09 - the SIX - Grabación EP_b.jpg', title: 'Grabación EP II' },
+        { id: '09', file: '09 - the SIX - Grabación EP_c.jpg', title: 'Grabación EP III' },
+        { id: '09', file: '09 - the SIX - Grabación EP_d.jpg', title: 'Grabación EP IV' },
+        { id: '09', file: '09 - the SIX - Grabación EP_e.jpg', title: 'Grabación EP V' },
+        { id: '09', file: '09 - the SIX - Grabación EP_f.jpg', title: 'Grabación EP VI' },
+        { id: '09', file: '09 - the SIX - Grabación EP_g.jpg', title: 'Grabación EP VII' },
+        { id: '09', file: '09 - the SIX - Grabación EP_h.jpg', title: 'Grabación EP VIII' },
+        { id: '09', file: '09 - the SIX - Grabación EP_i.jpg', title: 'Grabación EP IX' },
+        { id: '09', file: '09 - the SIX - Grabación EP_j.jpg', title: 'Grabación EP X' },
+        { id: '09', file: '09 - the SIX - Grabación EP_k.jpg', title: 'Grabación EP XI' },
+        { id: '09', file: '09 - the SIX - Grabación EP_l.jpg', title: 'Grabación EP XII' },
+
+        // 10 - SESIÓN DE FOTOS
+        { id: '10', file: '10 - the SIX - Sesión de fotos.jpg', title: 'Sesión Oficial' },
+        { id: '10', file: '10 - the SIX - Sesión de fotos_a.jpg', title: 'Sesión Oficial II' },
+        { id: '10', file: '10 - the SIX - Sesión de fotos_b.jpg', title: 'Sesión Oficial III' },
+        { id: '10', file: '10 - the SIX - Sesión de fotos_c.jpg', title: 'Sesión Bosque' },
+        { id: '10', file: '10 - the SIX - Sesión de fotos_d.jpg', title: 'Sesión Urbana' }
+      ];
+
+      function render() {
+        const container = document.getElementById('aboutCanvas');
+        if (!container) return;
+
+        container.innerHTML = '';
+        const placedItems = []; // { x, y, r, w, h } (x,y in %, w,h in approx %)
+
+        // Helper: Convert class size to approx % of canvas (Assuming canvas 200vw x 200vh)
+        // Redujimos un poco los tamaños estimados para ayudar a la distribución.
+        const sizeMap = {
+          'size-xs': { w: 3.5, h: 3.5 },
+          'size-sm': { w: 5, h: 4.5 },
+          'size-md': { w: 7, h: 6 },
+          'size-lg': { w: 9.5, h: 8 }
+        };
+
+        IMAGES.forEach((img, index) => {
+          const zone = ZONES[img.id] || { x: 50, y: 50 };
+
+          // Random size weighted towards medium
+          const weightedSizes = ['size-sm', 'size-md', 'size-md', 'size-lg'];
+          const sizeClass = weightedSizes[Math.floor(Math.random() * weightedSizes.length)];
+          const dims = sizeMap[sizeClass];
+
+          // "Best Candidate" Algorithm
+          // Generate multiple positions and pick the one farthest from others
+          // para minimizar superposición.
+          let bestCandidate = null;
+          let maxDistToClosest = -1;
+
+          // Aumentamos los intentos para encontrar mejor lugar
+          const ATTEMPTS = 50;
+          // Aumentamos el rango de dispersión (+/- 15%) para dar más aire
+          const SPREAD = 30; // 30 => +/- 15
+
+          for (let i = 0; i < ATTEMPTS; i++) {
+            // Generate random position near zone center
+            const rx = (Math.random() * SPREAD) - (SPREAD / 2);
+            const ry = (Math.random() * SPREAD) - (SPREAD / 2);
+            const candX = zone.x + rx;
+            const candY = zone.y + ry;
+            const candRot = (Math.random() * 30) - 15;
+
+            // Check against all placed items
+            let minDist = Number.MAX_VALUE;
+
+            if (placedItems.length === 0) {
+              minDist = 100; // First item is always good
+            } else {
+              for (const p of placedItems) {
+                // Simple Euclidean distance between centers
+                const dx = candX - p.x;
+                const dy = candY - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // Check overlap based on "radius" (approx half size)
+                // Si dist es pequeña, hay overlap. Queremos maximizar dist.
+                if (dist < minDist) {
+                  minDist = dist;
+                }
+              }
+            }
+
+            // We want to maximize the distance to the closest neighbor
+            if (minDist > maxDistToClosest) {
+              maxDistToClosest = minDist;
+              bestCandidate = { x: candX, y: candY, r: candRot };
+            }
+          }
+
+          // Fallback
+          const finalPos = bestCandidate || { x: zone.x, y: zone.y, r: 0 };
+
+          // Register placed item
+          placedItems.push({
+            x: finalPos.x,
+            y: finalPos.y,
+            w: dims.w,
+            h: dims.h,
+            r: finalPos.r
+          });
+
+          // Create DOM
+          const div = document.createElement('div');
+          div.className = `about-photo ${sizeClass}`;
+          div.style.left = `${finalPos.x}%`;
+          div.style.top = `${finalPos.y}%`;
+          div.style.transform = `rotate(${finalPos.r}deg)`;
+          div.style.zIndex = Math.floor(Math.random() * 10) + 1;
+          div.setAttribute('role', 'button');
+          div.setAttribute('tabindex', '0');
+          div.dataset.photoTitle = img.title;
+
+          const imgEl = document.createElement('img');
+          imgEl.src = `img/${img.file}`;
+          imgEl.alt = img.title;
+          imgEl.loading = "lazy";
+          imgEl.decoding = "async";
+
+          div.appendChild(imgEl);
+          container.appendChild(div);
+        });
+      }
+
+      return { init: render };
+    })();
+
+
+    // ==============================
+    // I18n — Español, Aymara (Bolivia), Quechua (Bolivia)
+    // ==============================
+    const I18n = (() => {
+      const STORAGE_KEY = 'site-lang';
+      const translations = {
+        es: {
+          nav_about: 'NOSOTROS',
+          nav_music: 'NUESTRA MÚSICA',
+          nav_tv: 'TV',
+          nav_contact: 'CONTRATACIONES',
+          section_about: 'Nosotros',
+          section_music: 'Nuestra Música',
+          section_tv: 'Videos',
+          section_contact: 'Contrataciones',
+          canvas_hint: 'Arrastra para explorar / Click para abrir',
+          presskit: 'PRESSKIT (PDF)',
+          rider: 'RIDER TÉCNICO (PDF)',
+          marca: 'MARCA GRÁFICA (RAR)',
+          contact_intro: 'Contrataciones, prensa<br>y colaboraciones',
+          btn_close_esc: 'CERRAR [ESC]',
+          photo_hint: 'Enter/Espacio: cerrar',
+          btn_close: 'CERRAR [X]',
+          btn_open: 'ABRIR',
+          btn_copy: 'COPIAR',
+          search_placeholder: 'Buscar pista…',
+          loader_label: 'Cargando',
+          about_tagline: 'Punk Rock de altura',
+          about_location: 'El Alto, Bolivia',
+          about_story_p1: 'Nacimos como Six Six Sex, pero el mundo nos masticó, nos escupió y solo quedó: <strong style="color: var(--red);">The SIX</strong>.',
+          about_story_p2: 'Más de seis años resistiendo. Sobreviviendo pandemias, silencios y escenarios prestados. Tocando donde se pueda, con equipos ajenos y cables heridos. Nuestro sonido a veces sucio, a veces limpio, pero siempre honesto.',
+          about_story_p3: 'Cada nota se funde en el alma; cada verso fluye entre ritmos que embriagan. Letras que retratan vidas, sueños y amores. Letras que enfrentan la soledad, la miseria y la realidad de cada día.',
+          about_story_p4: 'Años de sinceridad. Escenarios sudados. Noches que terminan convertidas en himnos, años de verdad sin filtro, sin pedir permiso y sin bajar la cabeza.',
+          about_members_title: 'Miembros',
+          about_role_voz_guitarra: ' – Voz y guitarra',
+          about_role_bateria: ' – Batería',
+          about_role_bajo: ' – Bajo',
+          ui_senal: 'SEÑAL',
+          ui_zone: 'ZONA ',
+          ui_archivo: 'ARCHIVO',
+          ui_archivo_colon: 'ARCHIVO: ',
+          ui_archivo_2026: 'ARCHIVO // 2026',
+          ui_player_01: 'PLAYER // 01',
+          ui_modo: 'Modo',
+          ui_calidad: 'Calidad',
+          ui_salida: 'Salida',
+          ui_selecciona_pista: 'SELECCIONA UNA PISTA',
+          ui_listo: 'LISTO',
+          ui_raw_demo: 'RAW / DEMO',
+          ui_stereo: 'STEREO',
+          title_anterior: 'Anterior',
+          title_siguiente: 'Siguiente',
+          title_aleatorio: 'Aleatorio',
+          title_volumen: 'Volumen',
+          title_reproducir: 'Reproducir',
+          title_detener: 'Detener',
+          title_loop: 'Loop',
+          title_download: 'Descargar',
+          btn_acquire: 'ADQUIRIR EL EP',
+          tv_header: 'TV // STREAM',
+          tv_select_video: 'SELECCIONA UN VIDEO',
+          tv_playlist: 'PLAYLIST',
+          photo_default: 'FOTO'
+        },
+        ay: {
+          nav_about: 'JAQENAKA',
+          nav_music: 'WAYÑUNAKA',
+          nav_tv: 'UÑACHT\'AWI',
+          nav_contact: 'YANAPT\'AWI',
+          section_about: 'Jaqenaka',
+          section_music: 'Wayñunaka',
+          section_tv: 'Uñacht\'awi',
+          section_contact: 'Yanapt\'awi',
+          canvas_hint: 'Aysuña uñacht\'ayawi / Ch\'iquña uñacht\'ayawi',
+          presskit: 'PRESSKIT (PDF)',
+          rider: 'RIDER TÉCNICO (PDF)',
+          marca: 'MARCA GRÁFICA (RAR)',
+          contact_intro: 'Uñt\'ayawi, prensa<br>jamuq taninaka',
+          btn_close_esc: 'Jarjata [ESC]',
+          photo_hint: 'Enter/Espacio: jark\'aña',
+          btn_close: 'JARJATA [X]',
+          btn_open: 'UÑACHT\'AYAWI',
+          btn_copy: 'CH\'UXUÑA',
+          search_placeholder: 'Pista thaqhaña…',
+          loader_label: 'Cargando',
+          about_tagline: 'Punk Rock jach\'a qullu',
+          about_location: 'El Alto, Wuliwya',
+          about_story_p1: 'Six Six Sex satawa uñtayäna, akatsti uraqi jiwir q\'uchur q\'uchur ukatx wali q\'ipäna: <strong style="color: var(--red);">The SIX</strong>.',
+          about_story_p2: 'Suxta marani jach\'a thakisiwi. Jark\'aqasiwi, ch\'ixi ukat escenario ukanaka. Kuna lurasi, equipos ajenos ukat cable heridos ukanaka. Q\'uchupa sonido mayniki ch\'ixi, mayniki q\'umir, ukhami chiqapa.',
+          about_story_p3: 'Kullaka nota ajlliri alma; kullaka verso ritmo embriagan ukanaka. Letras q\'uchu retratan jakaña, samiña ukat munasiñanaka. Letras q\'uchu soledad, miseria ukat q\'uti uru realidad ukanaka.',
+          about_story_p4: 'Mara sinceridad. Escenario junt\'u. Arumaki himno ukat tukuy, chiqap mara filtro janiw, permiso janiw ukat janiw kunka jithiya.',
+          about_members_title: 'Miembros',
+          about_role_voz_guitarra: ' – Aru ukat guitarra',
+          about_role_bateria: ' – Batería',
+          about_role_bajo: ' – Bajo',
+          ui_senal: 'SINA',
+          ui_zone: 'ZONA ',
+          ui_archivo: 'ARCHIVO',
+          ui_archivo_colon: 'ARCHIVO: ',
+          ui_archivo_2026: 'ARCHIVO // 2026',
+          ui_player_01: 'PLAYER // 01',
+          ui_modo: 'Modo',
+          ui_calidad: 'Calidad',
+          ui_salida: 'Salida',
+          ui_selecciona_pista: 'MA PISTA AJLLIÑA',
+          ui_listo: 'JAKISIÑA',
+          ui_raw_demo: 'RAW / DEMO',
+          ui_stereo: 'STEREO',
+          title_anterior: 'Nayra',
+          title_siguiente: 'Qhipa',
+          title_aleatorio: 'Chhika',
+          title_volumen: 'Jach\'a uywa',
+          title_reproducir: 'Uñacht\'ayaña',
+          title_detener: 'Jark\'aña',
+          title_loop: 'Loop',
+          title_download: 'Jiq\'suña',
+          btn_acquire: 'EP ALJAÑA',
+          tv_header: 'UÑACHT\'AWI // STREAM',
+          tv_select_video: 'MÄ VIDEO AJLLIÑA',
+          tv_playlist: 'LISTA',
+          photo_default: 'JAMUQA'
+        },
+        qu: {
+          nav_about: 'ÑOQANCHIK',
+          nav_music: 'TAQYKUNA',
+          nav_tv: 'RIKUYKUNA',
+          nav_contact: 'YANAPAY',
+          section_about: 'Ñoqanchik',
+          section_music: 'Taqykuna',
+          section_tv: 'Rikuykuna',
+          section_contact: 'Yanapay',
+          canvas_hint: 'Aysay qhawarina / Ch\'itiymi kichariy',
+          presskit: 'PRESSKIT (PDF)',
+          rider: 'RIDER TÉCNICO (PDF)',
+          marca: 'MARCA GRÁFICA (RAR)',
+          contact_intro: 'Tinkuy, prensa<br>yanapakuynin',
+          btn_close_esc: 'Wichq\'ay [ESC]',
+          photo_hint: 'Enter/Espacio: wichq\'ay',
+          btn_close: 'WICHQ\'AY [X]',
+          btn_open: 'KICHARIY',
+          btn_copy: 'CH\'USUY',
+          search_placeholder: 'Takita maskhay…',
+          loader_label: 'Cargando',
+          about_tagline: 'Punk Rock hanan pata',
+          about_location: 'El Alto, Wuliwya',
+          about_story_p1: 'Six Six Sex nirqanchik karqan, chaymantari pacham q\'umuchirqan, spitirqan chayri wakillan q\'iparqan: <strong style="color: var(--red);">The SIX</strong>.',
+          about_story_p2: 'Suqta wataña aswan resistir. Pandemia, ch\'isi escenario prestado. Maypipas tocar, equipo ajeno cable herido. Ñoqanchik sonido wakin ch\'ichi, wakin ch\'uya, ichaqa wiñay chiqap.',
+          about_story_p3: 'Tukuy nota alma ukupi t\'inkin; tukuy verso ritmo embriagan. Qillqa kawsay, musquy munay retratan. Qillqa soledad, miseria p\'unchaw realidad.',
+          about_story_p4: 'Wata chiqap. Escenario hump\'i. Tutas himno tukuk, wata chiqap filtro niraq, permiso mañakuq ni uman uraychu.',
+          about_members_title: 'Miembros',
+          about_role_voz_guitarra: ' – Simi guitarra',
+          about_role_bateria: ' – Batería',
+          about_role_bajo: ' – Bajo',
+          ui_senal: 'SINA',
+          ui_zone: 'ZONA ',
+          ui_archivo: 'ARCHIVO',
+          ui_archivo_colon: 'ARCHIVO: ',
+          ui_archivo_2026: 'ARCHIVO // 2026',
+          ui_player_01: 'PLAYER // 01',
+          ui_modo: 'Modo',
+          ui_calidad: 'Calidad',
+          ui_salida: 'Salida',
+          ui_selecciona_pista: 'TAKI AJLLAY',
+          ui_listo: 'ALLIN',
+          ui_raw_demo: 'RAW / DEMO',
+          ui_stereo: 'STEREO',
+          title_anterior: 'Ñawpa',
+          title_siguiente: 'Qhipa',
+          title_aleatorio: 'Chhika',
+          title_volumen: 'Volumen',
+          title_reproducir: 'Pukllay',
+          title_detener: 'Sayay',
+          title_loop: 'Loop',
+          title_download: 'Uraykuchiy',
+          btn_acquire: 'EP RANTIKUY',
+          tv_header: 'RIKUYKUNA // STREAM',
+          tv_select_video: 'VIDEO AJLLAY',
+          tv_playlist: 'TAKI LISTA',
+          photo_default: 'FOTO'
+        }
+      };
+
+      let currentLang = 'es';
+
+      function apply() {
+        const t = translations[currentLang] || translations.es;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          const val = t[key];
+          if (val == null) return;
+          if (val.includes('<')) el.innerHTML = val;
+          else el.textContent = val;
+        });
+        document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+          const key = el.getAttribute('data-i18n-aria');
+          const val = t[key];
+          if (val != null) el.setAttribute('aria-label', val);
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          const val = t[key];
+          if (val != null) el.setAttribute('placeholder', val);
+        });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+          const key = el.getAttribute('data-i18n-title');
+          const val = t[key];
+          if (val != null) el.setAttribute('title', val);
+        });
+        document.documentElement.lang = currentLang === 'es' ? 'es' : currentLang === 'ay' ? 'ay' : 'qu';
+        if (typeof DiscControl !== 'undefined' && DiscControl.refreshLabels) DiscControl.refreshLabels();
+        if (typeof AudioSystem !== 'undefined' && AudioSystem.refreshLabels) AudioSystem.refreshLabels();
+      }
+
+      function setLang(lang) {
+        if (!translations[lang]) return;
+        currentLang = lang;
+        try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) { }
+        document.querySelectorAll('.btn-lang').forEach(btn => {
+          const isActive = btn.getAttribute('data-lang') === lang;
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        apply();
+      }
+
+      function init() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved && translations[saved]) currentLang = saved;
+        } catch (e) { }
+        apply();
+        document.querySelectorAll('.btn-lang').forEach(btn => {
+          const isActive = btn.getAttribute('data-lang') === currentLang;
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+          btn.addEventListener('click', () => setLang(btn.getAttribute('data-lang')));
+        });
+      }
+
+      function t(key) {
+        return (translations[currentLang] || translations.es)[key] ?? key;
+      }
+
+      return { init, apply, setLang, getLang: () => currentLang, t };
+    })();
+
+    // ==============================
+    // Boot
+    // ==============================
+    async function boot() {
+      try {
+        Loader.startAnimation();
+
+        // 1. NUEVO: Generar la galería primero
+        GalleryLoader.init();
+
+        CursorPro.init();
+        Grain.init();
+        TextFX.enableHoverScramble();
+        Gallery.bind();
+        AudioSystem.bind();
+        DiscControl.bind();
+        TVSystem.bind();
+
+        await new Promise(resolve => {
+          if (document.readyState === 'complete') resolve();
+          else window.addEventListener('load', resolve, { once: true });
+        });
+
+        await Loader.complete();
+        ScrollSystem.bind();
+        InfiniteCanvas.init();
+        AboutPhotoModal.bind();
+        I18n.init();
+
+        // Ensure audio graph only after first user interaction
+        const unlock = () => {
+          try { AudioSystem.ensureAudioGraph(); } catch (e) { }
+          window.removeEventListener('pointerdown', unlock);
+          window.removeEventListener('keydown', unlock);
+        };
+        window.addEventListener('pointerdown', unlock, { once: true });
+        window.addEventListener('keydown', unlock, { once: true });
+
+      } catch (err) {
+        console.error('BOOT ERROR:', err);
+        Loader.hideFast();
+      }
+    }
+
+    boot();
+
+    // INDEPENDENT FIX: Guaranteed Contact Active Observer
+    document.addEventListener('DOMContentLoaded', () => {
+      const contactObs = new IntersectionObserver((entries) => {
+        entries.forEach(e => document.body.classList.toggle('contact-active', e.isIntersecting));
+      }, { threshold: 0.1 });
+      const contactEl = document.getElementById('contact');
+      if (contactEl) contactObs.observe(contactEl);
+    });
+  </script>
+</body>
+
+</html>

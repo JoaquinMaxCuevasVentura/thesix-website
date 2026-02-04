@@ -7,9 +7,6 @@
   <meta name="theme-color" content="#050505" />
   <title>THE SIX</title>
 
-  <!-- Tailwind (required by project) -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
   <!-- Material Icons (Google Fonts) -->
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -41,10 +38,23 @@
 
   <style>
     :root {
-      --bg: #050505;
-      --bone: #F0F0F0;
+      --black: #050505;
+      --white: #F0F0F0;
       --red: #FF0000;
-      --dim: rgba(240, 240, 240, .55);
+      --white-dim: rgba(240, 240, 240, .55);
+
+      --black-rgb: 5 5 5;
+      --white-rgb: 240 240 240;
+      --red-rgb: 255 0 0;
+
+      --header-h: 92px;
+      --footer-h: max(92px, env(safe-area-inset-bottom) + 92px);
+      --spacing: 44px;
+      --content-h: calc(100vh - var(--header-h) - var(--footer-h));
+
+      --bg: var(--black);
+      --bone: var(--white);
+      --dim: var(--white-dim);
       --grid: rgba(240, 240, 240, .14);
       --grid2: rgba(240, 240, 240, .07);
       --shadow: rgba(0, 0, 0, .8);
@@ -53,14 +63,10 @@
       --data: "Space Mono", monospace;
       --ring: rgba(255, 0, 0, .85);
       --ring2: rgba(240, 240, 240, .75);
-      /* ESPACIO SUPERIOR: Altura del menú fijo (~60px) + Gap (~32px) */
-      --section-edge: 92px;
 
-      /* ESPACIO INFERIOR: Altura del menú inferior (~60px) + Gap (~32px) + Safe Area (iPhone) */
-      --section-edge-bottom: max(92px, env(safe-area-inset-bottom) + 92px);
-
-      /* ESPACIO LATERAL: Estandarizado para que no baile el contenido */
-      --section-side: 44px;
+      --section-edge: var(--header-h);
+      --section-edge-bottom: var(--footer-h);
+      --section-side: var(--spacing);
 
       /* Player aesthetic variables (reference design) */
       --player-bg: #0a0a0a;
@@ -91,11 +97,19 @@
       text-rendering: geometricPrecision;
     }
 
+    body.contact-active {
+      background: var(--red);
+    }
+
     /* Mobile Spacing Adjustments */
     @media (max-width: 1100px) {
       :root {
-        --section-edge: 80px;
-        --section-side: 20px;
+        --header-h: 80px;
+        --footer-h: max(80px, env(safe-area-inset-bottom) + 80px);
+        --spacing: 20px;
+        --section-edge: var(--header-h);
+        --section-edge-bottom: var(--footer-h);
+        --section-side: var(--spacing);
       }
     }
 
@@ -189,24 +203,20 @@
       inset: 0;
       z-index: 0;
       pointer-events: none;
-      background:
-        linear-gradient(to right, var(--grid2) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--grid2) 1px, transparent 1px);
-      background-size: 44px 44px;
-      opacity: .55;
-      mix-blend-mode: screen;
+      display: none;
+      background: var(--bg);
+      opacity: 1;
+      mix-blend-mode: normal;
     }
 
     .system-bg::before {
       content: "";
       position: absolute;
       inset: -10%;
-      background:
-        radial-gradient(circle at 15% 30%, rgba(255, 0, 0, .12), transparent 45%),
-        radial-gradient(circle at 80% 70%, rgba(255, 0, 0, .10), transparent 55%),
-        radial-gradient(circle at 50% 50%, rgba(240, 240, 240, .08), transparent 60%);
-      filter: blur(2px);
-      opacity: .95;
+      display: none;
+      background: none;
+      filter: none;
+      opacity: 0;
     }
 
     /* Dynamic grain overlay (Canvas) */
@@ -240,6 +250,9 @@
       text-transform: uppercase;
       letter-spacing: .16em;
       z-index: 100;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
 
     .fixed-ui .top {
@@ -267,11 +280,35 @@
       font-family: var(--title);
     }
 
+    .logo img {
+      height: 32px;
+      width: auto;
+      display: block;
+    }
+
     .main-nav {
       pointer-events: auto;
       display: flex;
       gap: 22px;
       align-items: center;
+    }
+
+    .bar-actions {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      pointer-events: auto;
+    }
+
+    .bar-social {
+      display: flex;
+      gap: 12px;
+      font-weight: 700;
+    }
+
+    .lang-switcher {
+      display: flex;
+      gap: 8px;
     }
 
     .btn-lang {
@@ -393,6 +430,8 @@
     .scroll-container {
       position: relative;
       width: 100%;
+      height: 100vh;
+      box-sizing: border-box;
       overflow: hidden;
     }
 
@@ -403,6 +442,7 @@
       display: flex;
       flex-wrap: nowrap;
       width: fit-content;
+      height: 100vh;
       will-change: transform;
     }
 
@@ -410,7 +450,7 @@
       width: 100vw;
       height: 100vh;
       flex-shrink: 0;
-      padding: 0 !important;
+      padding: 0;
       border-right: 1px solid var(--grid);
       position: relative;
       display: flex;
@@ -428,7 +468,7 @@
     .contact-minimal {
       width: 100%;
       height: 100%;
-      padding: var(--section-edge) var(--section-side) var(--section-edge-bottom) var(--section-side);
+      padding: var(--header-h) var(--section-side) var(--footer-h) var(--section-side);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -444,7 +484,9 @@
     #hero {
       display: grid;
       grid-template-columns: 55% 45%;
-      align-items: center;
+      align-items: stretch;
+      grid-template-rows: 1fr;
+      height: 100%;
       gap: 0;
       background: #000000;
       /* Padding quitado, manejado por hijos */
@@ -458,8 +500,6 @@
       position: relative;
       z-index: 2;
       overflow: hidden;
-      padding-top: var(--section-edge) !important;
-      padding-bottom: var(--section-edge-bottom) !important;
       padding-right: var(--section-side);
     }
 
@@ -468,11 +508,13 @@
       position: relative;
       z-index: 3;
       /* Padding resets handled by standardization class above */
+      padding-top: var(--header-h);
+      padding-bottom: calc(var(--footer-h) + clamp(12px, 2vh, 18px));
     }
 
     .zone-indicator {
       position: absolute;
-      top: var(--section-edge);
+      top: var(--header-h);
       right: var(--section-side);
       z-index: 20;
       display: flex;
@@ -493,6 +535,10 @@
       padding: 10px 0;
       user-select: none;
       transition: all 0.3s var(--ease);
+    }
+
+    .zone .material-symbols-outlined {
+      font-size: 16px;
     }
 
     .zone-track {
@@ -582,6 +628,14 @@
       transition: all .2s var(--ease);
       pointer-events: auto;
       user-select: none;
+    }
+
+    .control-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    #btnPlayIcon {
+      font-size: 20px;
     }
 
     .control-btn:hover {
@@ -841,6 +895,10 @@
       border-color: rgba(240, 240, 240, .4);
     }
 
+    .ep-acquire-wrap .btn-ep {
+      margin: 0;
+    }
+
     .btn-ep:hover {
       background: var(--red);
       color: #050505;
@@ -860,6 +918,10 @@
       background: var(--player-bg);
     }
 
+    #waveHero {
+      display: none;
+    }
+
     /* Canvas visualizer (real-time) */
     canvas.vis {
       width: 100%;
@@ -867,6 +929,11 @@
       display: block;
       border: 1px solid var(--player-border);
       background: var(--player-bg);
+    }
+
+    canvas.vis.-archive {
+      height: 60px;
+      border-top: none;
     }
 
     /* ========================================
@@ -958,6 +1025,37 @@
       display: flex;
       border: 1px solid var(--player-border);
       background: transparent;
+    }
+
+    .btn-group.-spaced {
+      margin-top: 16px;
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .u-ml-auto {
+      margin-left: auto;
+    }
+
+    .u-fw-700 {
+      font-weight: 700;
+    }
+
+    .u-op-80 {
+      opacity: .8;
+    }
+
+    .u-flex {
+      display: flex;
+    }
+
+    .u-gap-8 {
+      gap: 8px;
     }
 
     .btn-group .control-btn {
@@ -1302,12 +1400,12 @@
 
     .mf-cursor.-dark {
       mix-blend-mode: normal !important;
-      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)) !important;
+      filter: drop-shadow(0 0 10px rgba(var(--white-rgb), 0.4)) !important;
     }
 
     .mf-cursor.-dark::before,
     .mf-cursor.-dark::after {
-      background: #050505 !important;
+      background: var(--black) !important;
     }
 
     .mf-cursor.-dark .mf-cursor-text {
@@ -1317,31 +1415,31 @@
     /* When body has contact-active class (set by JS when contact section is in view) */
     body.contact-active .mf-cursor {
       mix-blend-mode: normal !important;
-      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)) !important;
+      filter: drop-shadow(0 0 10px rgba(var(--white-rgb), 0.4)) !important;
     }
 
     body.contact-active .mf-cursor::before,
     body.contact-active .mf-cursor::after {
-      background: #050505 !important;
+      background: var(--black) !important;
     }
 
     body.contact-active .nav-link::after {
-      background: #050505 !important;
+      background: var(--black) !important;
     }
 
     body.contact-active .nav-link:hover {
-      color: #050505;
+      color: var(--black);
     }
 
     /* Force dark cursor when hovering inside contact section */
     #contact .mf-cursor {
       mix-blend-mode: normal !important;
-      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)) !important;
+      filter: drop-shadow(0 0 10px rgba(var(--white-rgb), 0.4)) !important;
     }
 
     #contact .mf-cursor::before,
     #contact .mf-cursor::after {
-      background: #050505 !important;
+      background: var(--black) !important;
     }
 
     /* Force custom cursor on Canvas & Photo Modal */
@@ -1423,6 +1521,9 @@
       padding: 0 !important;
       display: grid;
       grid-template-columns: 38% 62%;
+      grid-template-rows: 1fr;
+      height: 100%;
+      align-items: stretch;
       gap: 0;
     }
 
@@ -2377,7 +2478,7 @@
     /* Custom mouse-follower cursor */
     .mf-cursor {
       mix-blend-mode: screen;
-      filter: drop-shadow(0 0 18px rgba(255, 0, 0, .22));
+      filter: drop-shadow(0 0 18px rgba(var(--red-rgb), .22));
     }
 
     .mf-cursor::before,
@@ -2388,7 +2489,7 @@
       top: 50%;
       width: 34px;
       height: 2px;
-      background: rgba(255, 0, 0, .92);
+      background: rgba(var(--red-rgb), .92);
       transform: translate(-50%, -50%) rotate(45deg);
     }
 
@@ -2398,12 +2499,22 @@
 
     .mf-cursor.-link::before,
     .mf-cursor.-link::after {
-      background: rgba(240, 240, 240, .92);
+      background: rgba(var(--white-rgb), .92);
       width: 44px;
     }
 
     .mf-cursor.-glitch {
-      filter: drop-shadow(0 0 22px rgba(255, 0, 0, .35)) contrast(1.2);
+      filter: drop-shadow(0 0 22px rgba(var(--red-rgb), .35)) contrast(1.2);
+    }
+
+    .mf-cursor.-drag {
+      filter: drop-shadow(0 0 22px rgba(var(--red-rgb), .32)) contrast(1.15);
+    }
+
+    .mf-cursor.-drag::before,
+    .mf-cursor.-drag::after {
+      width: 54px;
+      height: 3px;
     }
 
     .mf-cursor.-glitch::before {
@@ -2428,7 +2539,7 @@
 
       #about {
         grid-template-columns: 1fr;
-        grid-template-rows: auto 60vh;
+        grid-template-rows: auto 1fr;
       }
 
       .about-info-panel {
@@ -2439,7 +2550,7 @@
       }
 
       .about-canvas-wrapper {
-        height: 60vh !important;
+        height: 100vh !important;
       }
 
       /* Photo modal full screen on small */
@@ -2522,9 +2633,14 @@
     /* Mobile layout switch (horizontal -> vertical) */
     @media (max-width: 1100px) {
       :root {
-        --section-edge: 80px;
-        --section-edge-bottom: max(80px, env(safe-area-inset-bottom) + 80px);
-        --section-side: 20px;
+        --header-h: 80px;
+        --footer-h: max(80px, env(safe-area-inset-bottom) + 80px);
+        --spacing: 20px;
+        --content-h: calc(100vh - var(--header-h) - var(--footer-h));
+
+        --section-edge: var(--header-h);
+        --section-edge-bottom: var(--footer-h);
+        --section-side: var(--spacing);
       }
 
       body {
@@ -2545,6 +2661,7 @@
 
       main.track {
         width: 100%;
+        height: 100vh;
         display: block;
       }
 
@@ -2743,7 +2860,7 @@
   <div class="fixed-ui">
     <div class="bar top">
       <a class="logo" href="#hero" data-nav="0" data-cursor-state="link" aria-label="Inicio">
-        <img src="img/Logotipo_thesix_blanco.svg" alt="The Six" style="height: 32px; width: auto;" decoding="async" />
+        <img src="img/Logotipo_thesix_blanco.svg" alt="The Six" decoding="async" />
       </a>
 
       <nav class="main-nav" aria-label="Navegación principal">
@@ -2758,14 +2875,14 @@
     </div>
 
     <div class="bar bottom">
-      <div style="color:var(--dim);">©2026</div>
+      <div>©2026</div>
 
-      <div style="display:flex; gap:24px; align-items:center; pointer-events:auto;">
-        <div style="display:flex; gap:12px; font-weight:700;">
+      <div class="bar-actions">
+        <div class="bar-social">
           <a href="#" class="nav-link" data-cursor-state="link" aria-label="Instagram">IG</a>
           <a href="#" class="nav-link" data-cursor-state="link" aria-label="YouTube">YT</a>
         </div>
-        <div class="lang-switcher" style="display:flex; gap:8px;" role="group" aria-label="Idioma del sitio">
+        <div class="lang-switcher" role="group" aria-label="Idioma del sitio">
           <button type="button" class="btn btn-lang active" data-lang="es" aria-pressed="true"
             title="Español">ESP</button>
           <button type="button" class="btn btn-lang" data-lang="ay" aria-pressed="false"
@@ -2793,7 +2910,7 @@
           <!-- Button moved to flow layout to be close to player -->
           <div class="ep-acquire-wrap">
             <a href="https://wa.me/59100000000" target="_blank" rel="noreferrer" class="btn btn-ep no-border"
-              data-cursor-state="link" data-i18n="btn_acquire" style="margin:0;">ADQUIRIR EL EP</a>
+              data-cursor-state="link" data-i18n="btn_acquire">ADQUIRIR EL EP</a>
           </div>
 
           <div class="hud">
@@ -2815,42 +2932,42 @@
               </div>
 
               <!-- Visualizer -->
-              <div id="waveHero" class="wave" aria-label="Waveform" style="display:none;"></div>
+              <div id="waveHero" class="wave" aria-label="Waveform"></div>
               <canvas class="vis" id="visHero" width="600" height="80" aria-label="Visualizador del EP"></canvas>
 
               <!-- Controls in Button Group -->
-              <div class="btn-group" style="margin-top: 16px;" aria-label="Controles del EP">
+              <div class="btn-group -spaced" aria-label="Controles del EP">
                 <button class="control-btn" id="btnShuffle" data-cursor-state="link" data-i18n-title="title_aleatorio"
                   title="Aleatorio" type="button" aria-pressed="false">
-                  <span class="material-symbols-outlined" style="font-size: 18px;">shuffle</span>
+                  <span class="material-symbols-outlined">shuffle</span>
                 </button>
                 <button class="control-btn" id="btnPrev" data-cursor-state="link" data-i18n-title="title_anterior"
                   title="Anterior" type="button">
-                  <span class="material-symbols-outlined" style="font-size: 18px;">skip_previous</span>
+                  <span class="material-symbols-outlined">skip_previous</span>
                 </button>
                 <button class="control-btn control-play" id="btnPlay" data-cursor-state="glitch"
                   data-i18n-title="title_reproducir" title="Reproducir" type="button" aria-pressed="false">
-                  <span class="material-symbols-outlined" id="btnPlayIcon" style="font-size: 20px;">play_arrow</span>
+                  <span class="material-symbols-outlined" id="btnPlayIcon">play_arrow</span>
                 </button>
                 <button class="control-btn" id="btnNext" data-cursor-state="link" data-i18n-title="title_siguiente"
                   title="Siguiente" type="button">
-                  <span class="material-symbols-outlined" style="font-size: 18px;">skip_next</span>
+                  <span class="material-symbols-outlined">skip_next</span>
                 </button>
                 <button class="control-btn" id="btnLoop" data-cursor-state="link" data-i18n-title="title_loop"
                   title="Loop" type="button" aria-pressed="false">
-                  <span class="material-symbols-outlined" style="font-size: 18px;">repeat</span>
+                  <span class="material-symbols-outlined">repeat</span>
                 </button>
               </div>
 
               <!-- Volume Row -->
-              <div style="display:flex; align-items:center; gap:16px; margin-top: 16px;">
+              <div class="player-row">
                 <div class="volume-wrap-ref">
                   <span class="material-symbols-outlined" id="btnVolume" data-cursor-state="link"
                     title="Volumen">volume_up</span>
                   <input id="volumeSlider" type="range" class="volume-slider-ref" min="0" max="1" step="0.01"
                     value="0.95" aria-label="Volumen" />
                 </div>
-                <div class="player-meta" style="margin-left: auto;">IDX: <span id="heroTrackIdx">01/03</span></div>
+                <div class="player-meta u-ml-auto">IDX: <span id="heroTrackIdx">01/03</span></div>
               </div>
 
               <div class="playlist scroll-adhoc" aria-label="Lista de canciones del EP">
@@ -2888,14 +3005,14 @@
         <div class="album-section">
           <div class="zone-indicator">
             <div class="zone" id="zoneLabel">
-              <span class="material-symbols-outlined" style="font-size: 16px;">radio_button_checked</span>
+              <span class="material-symbols-outlined">radio_button_checked</span>
               <span id="zoneName">ZONA 1</span>
             </div>
             <div class="zone-track" id="zoneTrack">CALLARÉ SIMPLEMENTE</div>
           </div>
 
           <div class="disc-stage">
-            <div class="disc" id="disc" data-cursor-state="glitch" role="button" tabindex="0"
+            <div class="disc" id="disc" data-cursor-state="drag" role="button" tabindex="0"
               aria-label="Disco: arrastra para cambiar de zona"></div>
           </div>
         </div>
@@ -2997,12 +3114,11 @@
               <!-- Visualizer -->
               <div class="archive-visualizer-container" aria-label="Waveform y visualizador del archivo">
                 <div id="waveArchive" class="wave"></div>
-                <canvas id="visArchive" class="vis" style="height: 60px; border-top:none;"
-                  aria-label="Visualizador del archivo"></canvas>
+                <canvas id="visArchive" class="vis -archive" aria-label="Visualizador del archivo"></canvas>
               </div>
 
               <!-- Controls in Button Group -->
-              <div class="btn-group" style="margin-top: 16px;" aria-label="Controles del archivo">
+              <div class="btn-group -spaced" aria-label="Controles del archivo">
                 <button class="control-btn" id="btnPrevArchive" data-cursor-state="link"
                   data-i18n-title="title_anterior" title="Anterior" type="button">
                   <span class="material-symbols-outlined">skip_previous</span>
@@ -3026,22 +3142,22 @@
               </div>
 
               <!-- Volume Row -->
-              <div style="display:flex; align-items:center; gap:16px; margin-top: 16px;">
+              <div class="player-row">
                 <div class="volume-wrap-ref">
                   <span class="material-symbols-outlined" id="btnVolumeArchive" data-cursor-state="link"
                     title="Volumen">volume_up</span>
                   <input id="volumeSliderArchive" type="range" class="volume-slider-ref" min="0" max="1" step="0.01"
                     value="0.95" aria-label="Volumen" />
                 </div>
-                <div class="player-meta" style="margin-left: auto;">IDX: <span id="archiveTrackIdx">00/06</span></div>
+                <div class="player-meta u-ml-auto">IDX: <span id="archiveTrackIdx">00/06</span></div>
               </div>
 
             </div>
 
             <div class="archive-playlist-section reveal" data-reveal>
               <div class="archive-playlist-header">
-                <span class="data" style="font-weight:700;">TRACKLIST</span>
-                <span class="material-symbols-outlined" style="font-size:16px; opacity:0.6;">queue_music</span>
+                <span class="data u-fw-700">TRACKLIST</span>
+                <span class="material-symbols-outlined">queue_music</span>
               </div>
               <ul id="trackList" class="archive-tracklist scroll-adhoc" aria-label="Lista de pistas"></ul>
             </div>
@@ -3054,7 +3170,7 @@
         <div class="tv-container">
           <div class="tv-header">
             <div class="data reveal" data-reveal data-i18n="tv_header">TV // STREAM</div>
-            <div class="data reveal" data-reveal style="opacity:.8;" data-i18n="tv_select_video">SELECCIONA UN VIDEO
+            <div class="data reveal u-op-80" data-reveal data-i18n="tv_select_video">SELECCIONA UN VIDEO
             </div>
           </div>
 
@@ -3071,7 +3187,7 @@
                   <div class="video-title" id="tvTitle">Último lanzamiento</div>
                   <div class="video-sub" id="tvSub">THE SIX // OFFICIAL</div>
                 </div>
-                <div style="display:flex; gap:8px;">
+                <div class="u-flex u-gap-8">
                   <a id="tvOpenYouTube" class="link-btn" data-cursor-state="link" target="_blank" rel="noreferrer"
                     data-i18n="btn_open">
                     <span class="material-symbols-outlined">open_in_new</span>
@@ -3088,8 +3204,8 @@
 
             <aside class="tv-list reveal" data-reveal aria-label="Lista de videos">
               <header>
-                <span class="data" style="font-weight:700;" data-i18n="tv_playlist">PLAYLIST</span>
-                <span class="material-symbols-outlined" style="font-size:16px; opacity:0.6;">subscriptions</span>
+                <span class="data u-fw-700" data-i18n="tv_playlist">PLAYLIST</span>
+                <span class="material-symbols-outlined">subscriptions</span>
               </header>
               <ul id="tvList" class="tv-items scroll-adhoc"></ul>
             </aside>
@@ -3169,8 +3285,8 @@
 
   <!-- Gallery Modal (Swiper) -->
   <div id="galleryModal" aria-label="Galería">
-    <button id="galleryClose" class="btn" data-cursor-state="glitch" data-scramble-hover type="button"
-      style="position:absolute; top:20px; right:20px; z-index:2600;" data-i18n="btn_close">CERRAR [X]</button>
+    <button id="galleryClose" class="btn gallery-close" data-cursor-state="glitch" data-scramble-hover
+      type="button" data-i18n="btn_close">CERRAR [X]</button>
     <div class="gallery-shell">
       <div class="swiper" id="gallerySwiper">
         <div class="swiper-wrapper">
@@ -3430,7 +3546,7 @@
     // ==============================
     // Cursor Pro (mouse-follower)
     // ==============================
-    const CursorPro = (() => {
+    const CursorManager = (() => {
       function init() {
         if (isMobile()) return;
         if (typeof MouseFollower === 'undefined') return;
@@ -5441,7 +5557,7 @@
         // 1. NUEVO: Generar la galería primero
         GalleryLoader.init();
 
-        CursorPro.init();
+        CursorManager.init();
         Grain.init();
         TextFX.enableHoverScramble();
         Gallery.bind();

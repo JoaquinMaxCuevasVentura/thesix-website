@@ -944,6 +944,14 @@
       border-top: none;
     }
 
+    #visHero {
+      display: none;
+    }
+
+    .archive-visualizer-container {
+      display: none;
+    }
+
     /* ========================================
        PLAYER REFERENCE AESTHETIC STYLES
        ======================================== */
@@ -2879,8 +2887,12 @@
 
       <div class="bar-actions">
         <div class="bar-social">
-          <a href="#" class="nav-link" data-cursor-state="link" aria-label="Instagram">IG</a>
-          <a href="#" class="nav-link" data-cursor-state="link" aria-label="YouTube">YT</a>
+          <a href="https://www.instagram.com/who.the.fuck.are.they/" target="_blank" rel="noreferrer"
+            class="nav-link" data-cursor-state="link" aria-label="Instagram">IG</a>
+          <a href="https://www.youtube.com/@The_Six" target="_blank" rel="noreferrer" class="nav-link"
+            data-cursor-state="link" aria-label="YouTube">YT</a>
+          <a href="https://soundcloud.com/the-six" target="_blank" rel="noreferrer" class="nav-link"
+            data-cursor-state="link" aria-label="SoundCloud">SC</a>
         </div>
         <div class="lang-switcher" role="group" aria-label="Idioma del sitio">
           <button type="button" class="btn btn-lang active" data-lang="es" aria-pressed="true"
@@ -2923,7 +2935,7 @@
         <div class="player-section">
           <!-- Button moved to flow layout to be close to player -->
           <div class="ep-acquire-wrap">
-            <a href="https://wa.me/59100000000" target="_blank" rel="noreferrer" class="btn btn-ep no-border"
+            <a href="https://wa.me/59178834651" target="_blank" rel="noreferrer" class="btn btn-ep no-border"
               data-cursor-state="link" data-i18n="btn_acquire">ADQUIRIR EL EP</a>
           </div>
 
@@ -3149,6 +3161,10 @@
                   data-i18n-title="title_siguiente" title="Siguiente" type="button">
                   <span class="material-symbols-outlined">skip_next</span>
                 </button>
+                <button class="control-btn" id="btnDownloadArchive" data-cursor-state="link"
+                  data-i18n-title="title_download" title="Descargar" type="button">
+                  <span class="material-symbols-outlined">download</span>
+                </button>
                 <button class="control-btn" id="btnArchiveLoop" data-cursor-state="link" data-i18n-title="title_loop"
                   title="Loop" type="button" aria-pressed="false">
                   <span class="material-symbols-outlined">repeat</span>
@@ -3238,19 +3254,19 @@
 
             <div class="contact-resources reveal" data-reveal>
               <div class="resource-list">
-                <a href="#" class="resource-btn" data-cursor-state="glitch"><svg class="resource-btn-icon"
+                <a href="contrataciones/presskit_thesix.pdf" class="resource-btn" data-cursor-state="glitch" download><svg class="resource-btn-icon"
                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round" fill="none" aria-hidden="true">
                     <path d="M4 15v4h16v-4" />
                     <path d="M12 4v12m0 0l-4-4m4 4l4-4" />
                   </svg><span data-i18n="presskit" data-scramble-hover>PRESSKIT (PDF)</span></a>
-                <a href="#" class="resource-btn" data-cursor-state="glitch"><svg class="resource-btn-icon"
+                <a href="contrataciones/ridertecnico_thesix.pdf" class="resource-btn" data-cursor-state="glitch" download><svg class="resource-btn-icon"
                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round" fill="none" aria-hidden="true">
                     <path d="M4 15v4h16v-4" />
                     <path d="M12 4v12m0 0l-4-4m4 4l4-4" />
                   </svg><span data-i18n="rider" data-scramble-hover>RIDER TÉCNICO (PDF)</span></a>
-                <a href="#" class="resource-btn" data-cursor-state="glitch"><svg class="resource-btn-icon"
+                <a href="contrataciones/Logotipo_thesix.rar" class="resource-btn" data-cursor-state="glitch" download><svg class="resource-btn-icon"
                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round" fill="none" aria-hidden="true">
                     <path d="M4 15v4h16v-4" />
@@ -3261,8 +3277,8 @@
           </div>
 
           <div class="contact-main reveal" data-reveal>
-            <a href="mailto:thesix@gmail.com" class="big-link" data-cursor-state="link">thesix@gmail.com</a>
-            <a href="https://wa.me/59160000000" class="big-link phone" data-cursor-state="link">+591 600 00 000</a>
+            <a href="mailto:JoACKo333@gmail.com" class="big-link" data-cursor-state="link">JoACKo333@gmail.com</a>
+            <a href="https://wa.me/59178834651" class="big-link phone" data-cursor-state="link">+591 78834651</a>
           </div>
         </div>
       </section>
@@ -3756,6 +3772,8 @@
       if (!disc) return { bind: () => { }, setZoneIndex: () => { }, setModeLabel: () => { }, refreshLabels: () => { } };
 
       let down = false;
+      let userGesture = false;
+      let userGestureTimer = 0;
       let rot = 240;
       let targetRot = 240;
       let vel = 0;
@@ -3790,17 +3808,26 @@
           if (zoneName) zoneName.textContent = (t('ui_zone') || 'ZONA ') + (currentZone + 1);
           if (zoneTrack) zoneTrack.textContent = track.name;
           if (emit && typeof AudioSystem !== 'undefined') {
-            AudioSystem.select('ep', currentZone, { autoplay: AudioSystem.isPlaying(), source: 'disc' });
+            AudioSystem.select('ep', currentZone, { autoplay: (down || userGesture) ? true : AudioSystem.isPlaying(), source: 'disc' });
           }
         }
       }
 
       function onDown(e) {
         down = true;
+        userGesture = true;
+        clearTimeout(userGestureTimer);
+        userGestureTimer = setTimeout(() => { userGesture = false; }, 260);
         disc.setPointerCapture?.(e.pointerId);
+
+        if (typeof AudioSystem !== 'undefined') {
+          AudioSystem.select('ep', lastZone, { autoplay: true, source: 'disc' });
+        }
       }
       function onUp(e) {
         down = false;
+        userGesture = false;
+        clearTimeout(userGestureTimer);
         disc.releasePointerCapture?.(e.pointerId);
       }
       function onMove(e) {
@@ -3854,6 +3881,9 @@
         disc.addEventListener('keydown', (e) => {
           if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
             e.preventDefault();
+            userGesture = true;
+            clearTimeout(userGestureTimer);
+            userGestureTimer = setTimeout(() => { userGesture = false; }, 260);
             targetRot += (e.key === 'ArrowRight' ? 40 : -40);
           }
         });
@@ -3897,6 +3927,8 @@
     const AudioSystem = (() => {
       const audioEl = $('#audio');
 
+      const ENABLE_VISUALIZER = false;
+
       // Controls - Hero
       const btnPrev = $('#btnPrev');
       const btnPlay = $('#btnPlay');
@@ -3913,6 +3945,7 @@
       const btnStopArchive = $('#btnStopArchive');
       const btnArchiveShuffle = $('#btnArchiveShuffle');
       const btnArchiveLoop = $('#btnArchiveLoop');
+      const btnDownloadArchive = $('#btnDownloadArchive');
       const btnVolumeArchive = $('#btnVolumeArchive');
       const volumeSliderArchive = $('#volumeSliderArchive');
       const volPopArchive = $('#volPopArchive');
@@ -3948,6 +3981,7 @@
       const state = {
         mode: 'ep',
         index: 0,
+        lastIndex: { ep: 0, archive: 0 },
         shuffleEP: false,
         shuffleArchive: false,
         loopArchive: false,
@@ -4101,8 +4135,11 @@
         if (!list || !list[index]) return;
 
         const wasPlaying = !audioEl.paused;
+        const prevMode = state.mode;
+        state.lastIndex[prevMode] = state.index;
         setMode(mode);
         state.index = index;
+        state.lastIndex[mode] = index;
 
         const t = list[index];
 
@@ -4115,28 +4152,39 @@
 
         try {
           const url = encodeURI(t.url);
-          audioEl.src = url;
-          audioEl.loop = (mode === 'archive') ? state.loopArchive : false;
-          audioEl.load();
+          const cur = audioEl.currentSrc || audioEl.src || '';
+          let nextAbs = url;
+          try { nextAbs = new URL(url, window.location.href).href; } catch { }
+          const sameSrc = cur && (cur === nextAbs);
 
-          if (wsHero) wsHero.load(url);
-          if (wsArchive) wsArchive.load(url);
+          audioEl.loop = (mode === 'archive') ? state.loopArchive : false;
+          if (!sameSrc) {
+            audioEl.src = url;
+            audioEl.load();
+            if (wsHero) wsHero.load(url);
+            if (wsArchive) wsArchive.load(url);
+          }
         } catch (e) {
           console.warn('Track load error:', e);
         }
 
         if (autoplay && (source !== 'init' || wasPlaying)) {
-          await play();
+          play();
         } else {
           syncPlayUI();
         }
       }
 
-      async function play() {
+      function play() {
         ensureAudioGraph();
-        if (ctx && ctx.state === 'suspended') await ctx.resume();
+        if (ctx && ctx.state === 'suspended') {
+          try { ctx.resume(); } catch { }
+        }
         try {
-          await audioEl.play();
+          const p = audioEl.play();
+          if (p && typeof p.catch === 'function') {
+            p.catch((e) => console.warn('Play blocked (autoplay policy):', e));
+          }
         } catch (e) {
           console.warn('Play blocked (autoplay policy):', e);
         }
@@ -4149,6 +4197,34 @@
         const listo = (typeof I18n !== 'undefined' && I18n.t) ? I18n.t('ui_listo') : 'LISTO';
         if (archiveStatus) archiveStatus.textContent = listo;
         updateTimeUI();
+      }
+
+      function downloadUrl(url, filename) {
+        if (!url) return;
+        try {
+          const a = document.createElement('a');
+          a.href = url;
+          const safe = String(filename || 'the-six')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/[^a-zA-Z0-9\-_\.áéíóúñÁÉÍÓÚÑ\s]/g, '_');
+          a.download = safe;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } catch (e) {
+          console.warn('Download blocked:', e);
+        }
+      }
+
+      function downloadCurrentArchiveTrack() {
+        const idx = state.lastIndex?.archive ?? state.index;
+        const t = lists.archive && lists.archive[idx];
+        if (!t) return;
+        const url = encodeURI(t.url);
+        const baseName = (t.url || '').split('/').pop() || `${t.name || 'track'}.mp3`;
+        const fileName = baseName.includes('.') ? baseName : `${baseName}.mp3`;
+        downloadUrl(url, fileName);
       }
 
       function isPlaying() { return !audioEl.paused; }
@@ -4276,6 +4352,7 @@
       }
 
       function setCanvasVisible(which, v) {
+        if (!ENABLE_VISUALIZER) return;
         visibility[which] = v;
         updateVizState();
       }
@@ -4374,6 +4451,11 @@
         btnPrev && btnPrev.addEventListener('click', () => { setMode('ep'); prev('ep'); });
         btnShuffle && btnShuffle.addEventListener('click', () => toggleShuffle('ep'));
 
+        trackLabel && trackLabel.addEventListener('click', () => {
+          setMode('ep');
+          if (audioEl.paused) play();
+        });
+
         // Volume popover (Hero)
         btnVolume && btnVolume.addEventListener('click', () => {
           const open = volPop?.classList.toggle('-open') ?? false;
@@ -4393,6 +4475,9 @@
         btnStopArchive && btnStopArchive.addEventListener('click', stop);
         btnArchiveShuffle && btnArchiveShuffle.addEventListener('click', () => toggleShuffle('archive'));
         btnArchiveLoop && btnArchiveLoop.addEventListener('click', toggleLoop);
+        btnDownloadArchive && btnDownloadArchive.addEventListener('click', () => {
+          downloadCurrentArchiveTrack();
+        });
 
         // Volume popover (Archive)
         btnVolumeArchive && btnVolumeArchive.addEventListener('click', () => {
@@ -4430,19 +4515,21 @@
         const search = $('#archiveSearch');
         search && search.addEventListener('input', () => renderTrackList(search.value), { passive: true });
 
-        // IO for visualizers
-        const heroObs = new IntersectionObserver((entries) => {
-          setCanvasVisible('hero', entries.some(e => e.isIntersecting));
-        }, { threshold: 0.12, rootMargin: '120px' });
+        if (ENABLE_VISUALIZER) {
+          // IO for visualizers
+          const heroObs = new IntersectionObserver((entries) => {
+            setCanvasVisible('hero', entries.some(e => e.isIntersecting));
+          }, { threshold: 0.12, rootMargin: '120px' });
 
-        const archiveObs = new IntersectionObserver((entries) => {
-          setCanvasVisible('archive', entries.some(e => e.isIntersecting));
-        }, { threshold: 0.12, rootMargin: '120px' });
+          const archiveObs = new IntersectionObserver((entries) => {
+            setCanvasVisible('archive', entries.some(e => e.isIntersecting));
+          }, { threshold: 0.12, rootMargin: '120px' });
 
-        if (visHero) heroObs.observe(visHero);
-        if (visArchive) archiveObs.observe(visArchive);
+          if (visHero) heroObs.observe(visHero);
+          if (visArchive) archiveObs.observe(visArchive);
 
-        document.addEventListener('visibilitychange', updateVizState);
+          document.addEventListener('visibilitychange', updateVizState);
+        }
 
         // Initial UI state
         setShuffleUI('ep', state.shuffleEP);
@@ -5418,7 +5505,7 @@
           title_loop: 'Loop',
           title_download: 'Descargar',
           btn_acquire: 'ADQUIRIR EL EP',
-          tv_header: 'TV // STREAM',
+          tv_header: 'VIDEOGRAFÍA',
           tv_select_video: 'SELECCIONA UN VIDEO',
           tv_playlist: 'PLAYLIST',
           photo_default: 'FOTO'
@@ -5476,7 +5563,7 @@
           title_loop: 'Loop',
           title_download: 'Jiq\'suña',
           btn_acquire: 'EP ALJAÑA',
-          tv_header: 'UÑACHT\'AWI // STREAM',
+          tv_header: 'UÑACHT\'AWI',
           tv_select_video: 'MÄ VIDEO AJLLIÑA',
           tv_playlist: 'LISTA',
           photo_default: 'JAMUQA'
@@ -5534,7 +5621,7 @@
           title_loop: 'Loop',
           title_download: 'Uraykuchiy',
           btn_acquire: 'EP RANTIKUY',
-          tv_header: 'RIKUYKUNA // STREAM',
+          tv_header: 'RIKUYKUNA',
           tv_select_video: 'VIDEO AJLLAY',
           tv_playlist: 'TAKI LISTA',
           photo_default: 'FOTO'

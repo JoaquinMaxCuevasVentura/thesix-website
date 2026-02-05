@@ -383,6 +383,16 @@
       .fixed-ui {
         inset: 10px;
       }
+
+      .bar-actions {
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .bar-social {
+        gap: 10px;
+      }
     }
 
     .progress {
@@ -2608,8 +2618,14 @@
         align-items: flex-start;
       }
 
+      .archive-header .archive-tools {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
       .archive-search {
         width: 100%;
+        flex: 1 1 100%;
       }
 
 
@@ -3164,10 +3180,6 @@
                 <button class="control-btn" id="btnDownloadArchive" data-cursor-state="link"
                   data-i18n-title="title_download" title="Descargar" type="button">
                   <span class="material-symbols-outlined">download</span>
-                </button>
-                <button class="control-btn" id="btnArchiveLoop" data-cursor-state="link" data-i18n-title="title_loop"
-                  title="Loop" type="button" aria-pressed="false">
-                  <span class="material-symbols-outlined">repeat</span>
                 </button>
               </div>
 
@@ -3949,6 +3961,7 @@
       const btnPlay = $('#btnPlay');
       const btnNext = $('#btnNext');
       const btnShuffle = $('#btnShuffle');
+      const btnLoop = $('#btnLoop');
       const btnVolume = $('#btnVolume');
       const volumeSlider = $('#volumeSlider');
       const volPop = $('#volPop');
@@ -4000,6 +4013,7 @@
         shuffleEP: false,
         shuffleArchive: false,
         loopArchive: false,
+        loopEP: false,
       };
 
       const lists = {
@@ -4066,7 +4080,9 @@
         const tDur = dur > 0 ? fmtTime(dur) : '00:00';
 
         if (timeLabel) timeLabel.textContent = `${tMain} / ${tDur}`;
-        if (archiveTime) archiveTime.textContent = `${tMain} / ${tDur}`;
+        if (archiveTime && archiveTime.childNodes && archiveTime.childNodes.length) {
+          archiveTime.childNodes[0].nodeValue = tMain;
+        }
         if (heroTimeMain) heroTimeMain.childNodes[0].nodeValue = tMain;
         if (heroTimeDuration) heroTimeDuration.textContent = tDur;
         if (archiveTimeDuration) archiveTimeDuration.textContent = tDur;
@@ -4100,11 +4116,19 @@
         if (!btnArchiveLoop) return;
         btnArchiveLoop.setAttribute('aria-pressed', on ? 'true' : 'false');
         btnArchiveLoop.style.color = on ? 'var(--red)' : '';
-        btnArchiveLoop.style.borderColor = on ? 'var(--red)' : 'rgba(240, 240, 240, .3)';
+        btnArchiveLoop.style.borderColor = on ? 'rgba(255,0,0,.65)' : '';
+      }
+
+      function setLoopUIHero(on) {
+        if (!btnLoop) return;
+        btnLoop.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btnLoop.style.color = on ? 'var(--red)' : '';
+        btnLoop.style.borderColor = on ? 'rgba(255,0,0,.65)' : '';
       }
 
       function setMode(mode) {
         state.mode = mode;
+        audioEl.loop = (mode === 'archive') ? state.loopArchive : state.loopEP;
         DiscControl?.setModeLabel?.(mode);
       }
 
@@ -4173,7 +4197,7 @@
           try { nextAbs = new URL(url, window.location.href).href; } catch { }
           const sameSrc = cur && (cur === nextAbs);
 
-          audioEl.loop = (mode === 'archive') ? state.loopArchive : false;
+          audioEl.loop = (mode === 'archive') ? state.loopArchive : state.loopEP;
           if (!sameSrc) {
             audioEl.src = url;
             if (wsHero) wsHero.load(url);
@@ -4295,8 +4319,14 @@
 
       function toggleLoop() {
         state.loopArchive = !state.loopArchive;
-        audioEl.loop = state.loopArchive;
+        audioEl.loop = (state.mode === 'archive') ? state.loopArchive : state.loopEP;
         setLoopUI(state.loopArchive);
+      }
+
+      function toggleLoopEP() {
+        state.loopEP = !state.loopEP;
+        audioEl.loop = (state.mode === 'ep') ? state.loopEP : state.loopArchive;
+        setLoopUIHero(state.loopEP);
       }
 
       // ------------------------------
@@ -4478,6 +4508,7 @@
         btnNext && btnNext.addEventListener('click', () => { setMode('ep'); next('ep'); });
         btnPrev && btnPrev.addEventListener('click', () => { setMode('ep'); prev('ep'); });
         btnShuffle && btnShuffle.addEventListener('click', () => toggleShuffle('ep'));
+        btnLoop && btnLoop.addEventListener('click', () => { setMode('ep'); toggleLoopEP(); });
 
         trackLabel && trackLabel.addEventListener('click', () => {
           setMode('ep');
@@ -4563,6 +4594,7 @@
         setShuffleUI('ep', state.shuffleEP);
         setShuffleUI('archive', state.shuffleArchive);
         setLoopUI(state.loopArchive);
+        setLoopUIHero(state.loopEP);
         syncPlayUI();
         updateTimeUI();
         renderTrackList();

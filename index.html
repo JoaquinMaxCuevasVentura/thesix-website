@@ -3799,8 +3799,8 @@
         disc.style.setProperty('--discRot', `${rot}deg`);
       }
 
-      function updateZone({ emit = true } = {}) {
-        const currentZone = getZoneFromRotation(rot);
+      function updateZoneAtRotation(deg, { emit = true, autoplay = false } = {}) {
+        const currentZone = getZoneFromRotation(deg);
         if (currentZone !== lastZone) {
           lastZone = currentZone;
           const track = zones[currentZone];
@@ -3808,9 +3808,16 @@
           if (zoneName) zoneName.textContent = (t('ui_zone') || 'ZONA ') + (currentZone + 1);
           if (zoneTrack) zoneTrack.textContent = track.name;
           if (emit && typeof AudioSystem !== 'undefined') {
-            AudioSystem.select('ep', currentZone, { autoplay: (down || userGesture) ? true : AudioSystem.isPlaying(), source: 'disc' });
+            AudioSystem.select('ep', currentZone, { autoplay, source: 'disc' });
           }
         }
+      }
+
+      function updateZone({ emit = true } = {}) {
+        updateZoneAtRotation(rot, {
+          emit,
+          autoplay: (down || userGesture) ? true : (typeof AudioSystem !== 'undefined' && AudioSystem.isPlaying ? AudioSystem.isPlaying() : false)
+        });
       }
 
       function onDown(e) {
@@ -3829,12 +3836,19 @@
         userGesture = false;
         clearTimeout(userGestureTimer);
         disc.releasePointerCapture?.(e.pointerId);
+
+        updateZoneAtRotation(rot, { emit: true, autoplay: true });
       }
       function onMove(e) {
         if (!down) return;
         const dx = (e.movementX || 0);
         vel += dx * 0.35;
         targetRot += dx * 1.2;
+
+        userGesture = true;
+        clearTimeout(userGestureTimer);
+        userGestureTimer = setTimeout(() => { userGesture = false; }, 260);
+        updateZoneAtRotation(targetRot, { emit: false, autoplay: false });
       }
 
       const raf = createRAFController(() => {
@@ -3843,7 +3857,7 @@
         if (!down && Math.abs(vel) < 0.1) targetRot += 0.02;
         rot += (targetRot - rot) * 0.12;
         apply();
-        updateZone({ emit: true });
+        updateZone({ emit: !down });
       });
 
       function setZoneIndex(zoneIndex, { animate = true, emit = false } = {}) {
@@ -3885,6 +3899,7 @@
             clearTimeout(userGestureTimer);
             userGestureTimer = setTimeout(() => { userGesture = false; }, 260);
             targetRot += (e.key === 'ArrowRight' ? 40 : -40);
+            updateZoneAtRotation(targetRot, { emit: true, autoplay: true });
           }
         });
 
@@ -3998,6 +4013,7 @@
       };
 
       function ensureAudioGraph() {
+        if (!ENABLE_VISUALIZER) return;
         if (ctx) return;
         ctx = new (window.AudioContext || window.webkitAudioContext)();
         analyser = ctx.createAnalyser();
@@ -4130,7 +4146,7 @@
         return lists[mode].findIndex(x => x.id === id);
       }
 
-      async function select(mode, index, { autoplay = true, source = 'ui' } = {}) {
+      function select(mode, index, { autoplay = true, source = 'ui' } = {}) {
         const list = lists[mode];
         if (!list || !list[index]) return;
 
@@ -4160,7 +4176,6 @@
           audioEl.loop = (mode === 'archive') ? state.loopArchive : false;
           if (!sameSrc) {
             audioEl.src = url;
-            audioEl.load();
             if (wsHero) wsHero.load(url);
             if (wsArchive) wsArchive.load(url);
           }
@@ -4183,7 +4198,19 @@
         try {
           const p = audioEl.play();
           if (p && typeof p.catch === 'function') {
-            p.catch((e) => console.warn('Play blocked (autoplay policy):', e));
+            p.catch((e) => {
+              if (e?.name === 'AbortError') {
+                const once = () => {
+                  try {
+                    const p2 = audioEl.play();
+                    if (p2 && typeof p2.catch === 'function') p2.catch(() => { });
+                  } catch { }
+                };
+                audioEl.addEventListener('canplay', once, { once: true });
+                return;
+              }
+              console.warn('Play blocked (autoplay policy):', e);
+            });
           }
         } catch (e) {
           console.warn('Play blocked (autoplay policy):', e);
@@ -4344,6 +4371,7 @@
       });
 
       function updateVizState() {
+        if (!ENABLE_VISUALIZER) return;
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const visible = document.visibilityState === 'visible';
         const any = visibility.hero || visibility.archive;
@@ -4721,12 +4749,14 @@
         const navEls = $$('.nav-link,[data-nav]');
         navEls.forEach(el => {
           el.addEventListener('click', (e) => {
-            e.preventDefault();
             const idx = parseInt(el.dataset.nav);
             if (!Number.isNaN(idx)) {
+              e.preventDefault();
               scrollToSection(idx);
             } else {
               const id = el.getAttribute('href');
+              if (id && !id.startsWith('#')) return;
+              e.preventDefault();
               const targetEl = id ? $(id) : null;
               if (targetEl) {
                 if (lenis) lenis.scrollTo(targetEl, { duration: 1.2 });
